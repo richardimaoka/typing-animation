@@ -149,7 +149,7 @@ export const SourceCodeView = ({ sourceCode, chunks }: SourceCodeViewProps) => {
       setTimeout(() => {
         setState(newState);
         setSourceCode(newSourceCode);
-      }, 100);
+      }, 1);
     }
   }, [chunks, sourceCode, src, state]);
 
@@ -158,7 +158,7 @@ export const SourceCodeView = ({ sourceCode, chunks }: SourceCodeViewProps) => {
       <pre>
         <code>{src}</code>
       </pre>
-      <div>{`${JSON.stringify(state)}`}</div>
+      {/* <div>{`${JSON.stringify(state)}`}</div> */}
     </div>
   );
 };
