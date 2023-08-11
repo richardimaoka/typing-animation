@@ -27,6 +27,10 @@ const insertChar = (src: string, pos: number, char: string): string => {
   return src.slice(0, pos) + char + src.slice(pos);
 };
 
+const removeChar = (src: string, pos: number): string => {
+  return src.slice(0, pos) + src.slice(pos + 1);
+};
+
 export const SourceCodeView = ({ chunks }: SourceCodeViewProps) => {
   const [sourceCode, setSourceCode] = useState(`1111
 2222
@@ -109,13 +113,15 @@ export const SourceCodeView = ({ chunks }: SourceCodeViewProps) => {
               kind: "InProgress",
               currentChunk: nextChunk,
               inChunkPos: 0,
-              overallPos: state.overallPos + chunk.Content.length,
+              overallPos: state.overallPos,
             });
           }
         } else {
           // keep processing this chunk
+          setSourceCode(removeChar(sourceCode, state.overallPos));
+
           const nextChunkPos = state.inChunkPos + 1;
-          const nextOverallPos = state.overallPos + 1;
+          const nextOverallPos = state.overallPos;
           setState({
             kind: "InProgress",
             currentChunk: state.currentChunk,

@@ -3,32 +3,40 @@ import { Chunk, SourceCodeView } from "./SourceCodeView";
 export default function Home() {
   const chunks: Chunk[] = [
     {
-      Content: "1111\n2222",
+      Content: "1111\n",
       Type: "EQUAL",
     },
     {
-      Content: "22",
+      Content: "2222\n",
+      Type: "DELETE",
+    },
+    {
+      Content: "222222\n",
       Type: "ADD",
     },
     {
-      Content: "\n",
+      Content: "",
       Type: "EQUAL",
     },
     {
-      Content: "33",
+      Content: "3333\n",
+      Type: "DELETE",
+    },
+    {
+      Content: "333333\n",
       Type: "ADD",
     },
     {
-      Content: "3333\n4444\n",
+      Content: "4444\n",
       Type: "EQUAL",
-    },
-    {
-      Content: "555",
-      Type: "ADD",
     },
     {
       Content: "5555\n",
-      Type: "EQUAL",
+      Type: "DELETE",
+    },
+    {
+      Content: "5555555\n",
+      Type: "ADD",
     },
   ];
 
