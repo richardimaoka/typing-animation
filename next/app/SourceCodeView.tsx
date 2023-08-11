@@ -1,50 +1,138 @@
+"use client";
 import { useEffect, useState } from "react";
 
-export const SourceCodeView = () => {
+export interface Chunk {
+  Content: string;
+  Type: "ADD" | "DELETE" | "EQUAL";
+}
+
+interface InProgress {
+  kind: "InProgress";
+  currentChunk: number;
+  inChunkPos: number;
+  overallPos: number;
+}
+
+interface Done {
+  kind: "Done";
+}
+
+type State = InProgress | Done;
+
+interface SourceCodeViewProps {
+  chunks: Chunk[];
+}
+
+const insertChar = (src: string, pos: number, char: string): string => {
+  return src.slice(0, pos) + char + src.slice(pos);
+};
+
+export const SourceCodeView = ({ chunks }: SourceCodeViewProps) => {
   const [sourceCode, setSourceCode] = useState(`1111
 2222
 3333
 4444
 5555`);
 
-  interface Chunk {
-    Content: string;
-    Type: "ADD" | "DELETE" | "EQUAL";
-  }
-  const chunks: Chunk[] = [
-    {
-      Content: "1111\n2222",
-      Type: "EQUAL",
-    },
-    {
-      Content: "22",
-      Type: "ADD",
-    },
-    {
-      Content: "\n",
-      Type: "EQUAL",
-    },
-    {
-      Content: "33",
-      Type: "ADD",
-    },
-    {
-      Content: "3333\n4444\n",
-      Type: "EQUAL",
-    },
-    {
-      Content: "555",
-      Type: "ADD",
-    },
-    {
-      Content: "5555\n",
-      Type: "EQUAL",
-    },
-  ];
+  const [state, setState] = useState<State>({
+    kind: "InProgress",
+    currentChunk: 0,
+    inChunkPos: 0,
+    overallPos: 0,
+  });
+
+  useEffect(() => {
+    if (state.kind === "Done") {
+      return;
+    }
+
+    const chunk = chunks[state.currentChunk];
+
+    console.log(chunk.Type.padStart(5, " "), JSON.stringify(state));
+
+    switch (chunk.Type) {
+      case "EQUAL":
+        const nextChunk = state.currentChunk + 1;
+        if (nextChunk > chunks.length - 1) {
+          setState({ kind: "Done" });
+        } else {
+          setState({
+            kind: "InProgress",
+            currentChunk: nextChunk,
+            inChunkPos: 0,
+            overallPos: state.overallPos + chunk.Content.length,
+          });
+        }
+        break;
+      case "ADD":
+        if (state.inChunkPos === chunk.Content.length) {
+          // this chunk is finished
+          const nextChunk = state.currentChunk + 1;
+          if (nextChunk > chunks.length - 1) {
+            setState({ kind: "Done" });
+          } else {
+            setState({
+              kind: "InProgress",
+              currentChunk: nextChunk,
+              inChunkPos: 0,
+              overallPos: state.overallPos,
+            });
+          }
+        } else {
+          // keep processing this chunk
+          setSourceCode(
+            insertChar(
+              sourceCode,
+              state.overallPos,
+              chunk.Content[state.inChunkPos]
+            )
+          );
+
+          const nextChunkPos = state.inChunkPos + 1;
+          const nextOverallPos = state.overallPos + 1;
+          setState({
+            kind: "InProgress",
+            currentChunk: state.currentChunk,
+            inChunkPos: nextChunkPos,
+            overallPos: nextOverallPos,
+          });
+        }
+        break;
+      case "DELETE":
+        if (state.inChunkPos === chunk.Content.length) {
+          // this chunk is finished
+          const nextChunk = state.currentChunk + 1;
+          if (nextChunk > chunks.length - 1) {
+            setState({ kind: "Done" });
+          } else {
+            setState({
+              kind: "InProgress",
+              currentChunk: nextChunk,
+              inChunkPos: 0,
+              overallPos: state.overallPos + chunk.Content.length,
+            });
+          }
+        } else {
+          // keep processing this chunk
+          const nextChunkPos = state.inChunkPos + 1;
+          const nextOverallPos = state.overallPos + 1;
+          setState({
+            kind: "InProgress",
+            currentChunk: state.currentChunk,
+            inChunkPos: nextChunkPos,
+            overallPos: nextOverallPos,
+          });
+        }
+        break;
+    }
+  }, [chunks, sourceCode, state]);
 
   return (
-    <pre>
-      <code>{sourceCode} </code>
-    </pre>
+    <div>
+      <pre>
+        <code>{sourceCode} </code>
+      </pre>
+      {state.kind === "InProgress" && <div>{`${JSON.stringify(state)}`}</div>}
+    </div>
   );
 };
