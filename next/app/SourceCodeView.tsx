@@ -19,9 +19,97 @@ interface Done {
 
 type State = InProgress | Done;
 
-interface SourceCodeViewProps {
-  chunks: Chunk[];
-}
+const transition = (
+  chunks: Chunk[],
+  state: InProgress,
+  sourceCode: string
+): [State, string] => {
+  const chunk = chunks[state.currentChunk];
+
+  switch (chunk.Type) {
+    case "EQUAL":
+      const nextChunk = state.currentChunk + 1;
+      if (nextChunk > chunks.length - 1) {
+        return [{ kind: "Done" }, sourceCode];
+      } else {
+        return [
+          {
+            kind: "InProgress",
+            currentChunk: nextChunk,
+            inChunkPos: 0,
+            overallPos: state.overallPos + chunk.Content.length,
+          },
+          sourceCode,
+        ];
+      }
+    case "ADD":
+      if (state.inChunkPos === chunk.Content.length) {
+        // this chunk is finished
+        const nextChunk = state.currentChunk + 1;
+        if (nextChunk > chunks.length - 1) {
+          return [{ kind: "Done" }, sourceCode];
+        } else {
+          return [
+            {
+              kind: "InProgress",
+              currentChunk: nextChunk,
+              inChunkPos: 0,
+              overallPos: state.overallPos,
+            },
+            sourceCode,
+          ];
+        }
+      } else {
+        // keep processing this chunk
+        const nextChunkPos = state.inChunkPos + 1;
+        const nextOverallPos = state.overallPos + 1;
+        return [
+          {
+            kind: "InProgress",
+            currentChunk: state.currentChunk,
+            inChunkPos: nextChunkPos,
+            overallPos: nextOverallPos,
+          },
+          insertChar(
+            sourceCode,
+            state.overallPos,
+            chunk.Content[state.inChunkPos]
+          ),
+        ];
+      }
+    case "DELETE":
+      if (state.inChunkPos === chunk.Content.length) {
+        // this chunk is finished
+        const nextChunk = state.currentChunk + 1;
+        if (nextChunk > chunks.length - 1) {
+          return [{ kind: "Done" }, sourceCode];
+        } else {
+          return [
+            {
+              kind: "InProgress",
+              currentChunk: nextChunk,
+              inChunkPos: 0,
+              overallPos: state.overallPos,
+            },
+            sourceCode,
+          ];
+        }
+      } else {
+        // keep processing this chunk
+        const nextChunkPos = state.inChunkPos + 1;
+        const nextOverallPos = state.overallPos;
+        return [
+          {
+            kind: "InProgress",
+            currentChunk: state.currentChunk,
+            inChunkPos: nextChunkPos,
+            overallPos: nextOverallPos,
+          },
+          removeChar(sourceCode, state.overallPos),
+        ];
+      }
+  }
+};
 
 const insertChar = (src: string, pos: number, char: string): string => {
   return src.slice(0, pos) + char + src.slice(pos);
@@ -30,6 +118,9 @@ const insertChar = (src: string, pos: number, char: string): string => {
 const removeChar = (src: string, pos: number): string => {
   return src.slice(0, pos) + src.slice(pos + 1);
 };
+interface SourceCodeViewProps {
+  chunks: Chunk[];
+}
 
 export const SourceCodeView = ({ chunks }: SourceCodeViewProps) => {
   const [sourceCode, setSourceCode] = useState(`1111
@@ -49,88 +140,9 @@ export const SourceCodeView = ({ chunks }: SourceCodeViewProps) => {
     if (state.kind === "Done") {
       return;
     }
-
-    const chunk = chunks[state.currentChunk];
-
-    console.log(chunk.Type.padStart(5, " "), JSON.stringify(state));
-
-    switch (chunk.Type) {
-      case "EQUAL":
-        const nextChunk = state.currentChunk + 1;
-        if (nextChunk > chunks.length - 1) {
-          setState({ kind: "Done" });
-        } else {
-          setState({
-            kind: "InProgress",
-            currentChunk: nextChunk,
-            inChunkPos: 0,
-            overallPos: state.overallPos + chunk.Content.length,
-          });
-        }
-        break;
-      case "ADD":
-        if (state.inChunkPos === chunk.Content.length) {
-          // this chunk is finished
-          const nextChunk = state.currentChunk + 1;
-          if (nextChunk > chunks.length - 1) {
-            setState({ kind: "Done" });
-          } else {
-            setState({
-              kind: "InProgress",
-              currentChunk: nextChunk,
-              inChunkPos: 0,
-              overallPos: state.overallPos,
-            });
-          }
-        } else {
-          // keep processing this chunk
-          setSourceCode(
-            insertChar(
-              sourceCode,
-              state.overallPos,
-              chunk.Content[state.inChunkPos]
-            )
-          );
-
-          const nextChunkPos = state.inChunkPos + 1;
-          const nextOverallPos = state.overallPos + 1;
-          setState({
-            kind: "InProgress",
-            currentChunk: state.currentChunk,
-            inChunkPos: nextChunkPos,
-            overallPos: nextOverallPos,
-          });
-        }
-        break;
-      case "DELETE":
-        if (state.inChunkPos === chunk.Content.length) {
-          // this chunk is finished
-          const nextChunk = state.currentChunk + 1;
-          if (nextChunk > chunks.length - 1) {
-            setState({ kind: "Done" });
-          } else {
-            setState({
-              kind: "InProgress",
-              currentChunk: nextChunk,
-              inChunkPos: 0,
-              overallPos: state.overallPos,
-            });
-          }
-        } else {
-          // keep processing this chunk
-          setSourceCode(removeChar(sourceCode, state.overallPos));
-
-          const nextChunkPos = state.inChunkPos + 1;
-          const nextOverallPos = state.overallPos;
-          setState({
-            kind: "InProgress",
-            currentChunk: state.currentChunk,
-            inChunkPos: nextChunkPos,
-            overallPos: nextOverallPos,
-          });
-        }
-        break;
-    }
+    const [newState, newSourceCode] = transition(chunks, state, sourceCode);
+    setState(newState);
+    setSourceCode(newSourceCode);
   }, [chunks, sourceCode, state]);
 
   return (
