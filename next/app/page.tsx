@@ -1,3 +1,9 @@
+import { SourceCodeView } from "./SourceCodeView";
+
 export default function Home() {
-  return <main></main>;
+  return (
+    <main>
+      <SourceCodeView />
+    </main>
+  );
 }
