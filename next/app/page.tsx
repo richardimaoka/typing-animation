@@ -40,9 +40,14 @@ export default function Home() {
     },
   ];
 
+  const sourceCode = `1111
+2222
+3333
+4444
+5555`;
   return (
     <main>
-      <SourceCodeView chunks={chunks} />
+      <SourceCodeView sourceCode={sourceCode} chunks={chunks} />
     </main>
   );
 }

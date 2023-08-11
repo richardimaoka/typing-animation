@@ -6,6 +6,10 @@ export interface Chunk {
   Type: "ADD" | "DELETE" | "EQUAL";
 }
 
+interface Initializing {
+  kind: "Initializing";
+}
+
 interface InProgress {
   kind: "InProgress";
   currentChunk: number;
@@ -17,7 +21,7 @@ interface Done {
   kind: "Done";
 }
 
-type State = InProgress | Done;
+type State = Initializing | InProgress | Done;
 
 const transition = (
   chunks: Chunk[],
@@ -119,38 +123,42 @@ const removeChar = (src: string, pos: number): string => {
   return src.slice(0, pos) + src.slice(pos + 1);
 };
 interface SourceCodeViewProps {
+  sourceCode: string;
   chunks: Chunk[];
 }
 
-export const SourceCodeView = ({ chunks }: SourceCodeViewProps) => {
-  const [sourceCode, setSourceCode] = useState(`1111
-2222
-3333
-4444
-5555`);
-
+export const SourceCodeView = ({ sourceCode, chunks }: SourceCodeViewProps) => {
+  const [src, setSourceCode] = useState("");
   const [state, setState] = useState<State>({
-    kind: "InProgress",
-    currentChunk: 0,
-    inChunkPos: 0,
-    overallPos: 0,
+    kind: "Initializing",
   });
 
   useEffect(() => {
-    if (state.kind === "Done") {
+    if (state.kind === "Initializing") {
+      setSourceCode(sourceCode);
+      setState({
+        kind: "InProgress",
+        currentChunk: 0,
+        inChunkPos: 0,
+        overallPos: 0,
+      });
+    } else if (state.kind === "Done") {
       return;
+    } else {
+      const [newState, newSourceCode] = transition(chunks, state, src);
+      setTimeout(() => {
+        setState(newState);
+        setSourceCode(newSourceCode);
+      }, 100);
     }
-    const [newState, newSourceCode] = transition(chunks, state, sourceCode);
-    setState(newState);
-    setSourceCode(newSourceCode);
-  }, [chunks, sourceCode, state]);
+  }, [chunks, sourceCode, src, state]);
 
   return (
     <div>
       <pre>
-        <code>{sourceCode} </code>
+        <code>{src}</code>
       </pre>
-      {state.kind === "InProgress" && <div>{`${JSON.stringify(state)}`}</div>}
+      <div>{`${JSON.stringify(state)}`}</div>
     </div>
   );
 };
