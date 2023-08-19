@@ -53,6 +53,7 @@ const transition = (
       switch (chunk.Type) {
         case "EQUAL":
           const nextChunk = state.currentChunk + 1;
+          const nextOverallPos = state.overallPos + chunk.Content.length;
           if (nextChunk > chunks.length - 1) {
             return [{ kind: "Done" }, sourceCode, 0];
           } else {
@@ -61,7 +62,7 @@ const transition = (
                 kind: "InProgress", //ReadyForChunk
                 currentChunk: nextChunk,
                 inChunkPos: 0,
-                overallPos: state.overallPos + chunk.Content.length,
+                overallPos: nextOverallPos,
               },
               sourceCode,
               transitionMilliSeconds,
@@ -71,6 +72,7 @@ const transition = (
           if (state.inChunkPos === chunk.Content.length) {
             // this chunk is finished
             const nextChunk = state.currentChunk + 1;
+            const nextOverallPos = state.overallPos;
             if (nextChunk > chunks.length - 1) {
               return [{ kind: "Done" }, sourceCode, 0];
             } else {
@@ -79,7 +81,7 @@ const transition = (
                   kind: "InProgress", //ReadyForChunk
                   currentChunk: nextChunk,
                   inChunkPos: 0,
-                  overallPos: state.overallPos,
+                  overallPos: nextOverallPos,
                 },
                 sourceCode,
                 transitionMilliSeconds,
@@ -109,6 +111,7 @@ const transition = (
           if (state.inChunkPos === chunk.Content.length) {
             // this chunk is finished
             const nextChunk = state.currentChunk + 1;
+            const nextOverallPos = state.overallPos;
             if (nextChunk > chunks.length - 1) {
               return [{ kind: "Done" }, sourceCode, 0];
             } else {
@@ -117,7 +120,7 @@ const transition = (
                   kind: "InProgress", //ReadyForChunk
                   currentChunk: nextChunk,
                   inChunkPos: 0,
-                  overallPos: state.overallPos,
+                  overallPos: nextOverallPos,
                 },
                 sourceCode,
                 transitionMilliSeconds,
