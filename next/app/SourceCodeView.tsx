@@ -29,6 +29,25 @@ interface Done {
 
 type State = Init | ReadyForChunk | InProgress | Done;
 
+const nextChunkState = (
+  state: InProgress,
+  chunks: Chunk[]
+): InProgress | Done => {
+  const chunk = chunks[state.currentChunk];
+  const nextChunk = state.currentChunk + 1;
+  const nextOverallPos = state.overallPos + chunk.Content.length;
+  if (nextChunk > chunks.length - 1) {
+    return { kind: "Done" };
+  } else {
+    return {
+      kind: "InProgress", //ReadyForChunk
+      currentChunk: nextChunk,
+      inChunkPos: 0,
+      overallPos: nextOverallPos,
+    };
+  }
+};
+
 const transition = (
   chunks: Chunk[],
   state: InProgress | ReadyForChunk,
@@ -52,22 +71,11 @@ const transition = (
       const chunk = chunks[state.currentChunk];
       switch (chunk.Type) {
         case "EQUAL":
-          const nextChunk = state.currentChunk + 1;
-          const nextOverallPos = state.overallPos + chunk.Content.length;
-          if (nextChunk > chunks.length - 1) {
-            return [{ kind: "Done" }, sourceCode, 0];
-          } else {
-            return [
-              {
-                kind: "InProgress", //ReadyForChunk
-                currentChunk: nextChunk,
-                inChunkPos: 0,
-                overallPos: nextOverallPos,
-              },
-              sourceCode,
-              transitionMilliSeconds,
-            ];
-          }
+          return [
+            nextChunkState(state, chunks),
+            sourceCode,
+            transitionMilliSeconds,
+          ];
         case "ADD":
           if (state.inChunkPos === chunk.Content.length) {
             // this chunk is finished
