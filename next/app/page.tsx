@@ -47,7 +47,8 @@ export default function Home() {
       });
       google.accounts.id.prompt();
     };
-  </script>`;
+  </script>
+</html>`;
   return (
     <main>
       <SourceCodeView sourceCode={sourceCode} chunks={chunks} />
