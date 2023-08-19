@@ -10,12 +10,6 @@ interface Init {
   kind: "Init";
 }
 
-interface ReadyForChunk {
-  kind: "ReadyForChunk";
-  currentChunk: number;
-  overallPos: number;
-}
-
 interface InProgress {
   kind: "InProgress";
   currentChunk: number;
@@ -27,7 +21,7 @@ interface Done {
   kind: "Done";
 }
 
-type State = Init | ReadyForChunk | InProgress | Done;
+type State = Init | InProgress | Done;
 
 const nextChunkState = (
   state: InProgress,
@@ -55,82 +49,68 @@ const nextChunkState = (
 
 const transition = (
   chunks: Chunk[],
-  state: InProgress | ReadyForChunk,
+  state: InProgress,
   sourceCode: string
 ): [State, string, number] => {
   const transitionMilliSeconds = 20;
+  const chunk = chunks[state.currentChunk];
 
-  switch (state.kind) {
-    case "ReadyForChunk":
+  switch (chunk.Type) {
+    case "EQUAL":
       return [
-        {
-          kind: "InProgress",
-          currentChunk: state.currentChunk,
-          inChunkPos: 0,
-          overallPos: 0,
-        },
+        nextChunkState(state, chunks), // skip to the next chunk
         sourceCode,
-        0,
+        transitionMilliSeconds,
       ];
-    case "InProgress":
-      const chunk = chunks[state.currentChunk];
-      switch (chunk.Type) {
-        case "EQUAL":
-          return [
-            nextChunkState(state, chunks), // skip to the next chunk
+    case "ADD":
+      if (state.inChunkPos === chunk.Content.length) {
+        // this chunk is finished
+        return [
+          nextChunkState(state, chunks),
+          sourceCode,
+          transitionMilliSeconds,
+        ];
+      } else {
+        // keep processing this chunk
+        const nextNewLinePos = chunk.Content.indexOf("\n");
+        const nextChunkPos = state.inChunkPos + 1;
+        const nextOverallPos = state.overallPos + 1;
+        return [
+          {
+            kind: "InProgress",
+            currentChunk: state.currentChunk,
+            inChunkPos: nextChunkPos,
+            overallPos: nextOverallPos,
+          },
+          insertChar(
             sourceCode,
-            transitionMilliSeconds,
-          ];
-        case "ADD":
-          if (state.inChunkPos === chunk.Content.length) {
-            // this chunk is finished
-            return [
-              nextChunkState(state, chunks),
-              sourceCode,
-              transitionMilliSeconds,
-            ];
-          } else {
-            // keep processing this chunk
-            const nextNewLinePos = chunk.Content.indexOf("\n");
-            const nextChunkPos = state.inChunkPos + 1;
-            const nextOverallPos = state.overallPos + 1;
-            return [
-              {
-                kind: "InProgress",
-                currentChunk: state.currentChunk,
-                inChunkPos: nextChunkPos,
-                overallPos: nextOverallPos,
-              },
-              insertChar(
-                sourceCode,
-                state.overallPos,
-                chunk.Content[state.inChunkPos]
-              ),
-              transitionMilliSeconds,
-            ];
-          }
-        case "DELETE":
-          if (state.inChunkPos === chunk.Content.length) {
-            return [
-              nextChunkState(state, chunks),
-              sourceCode,
-              transitionMilliSeconds,
-            ];
-          } else {
-            // keep processing this chunk
-            const nextChunkPos = state.inChunkPos + 1;
-            const nextOverallPos = state.overallPos;
-            return [
-              {
-                kind: "InProgress",
-                currentChunk: state.currentChunk,
-                inChunkPos: nextChunkPos,
-                overallPos: nextOverallPos,
-              },
-              removeChar(sourceCode, state.overallPos),
-              transitionMilliSeconds,
-            ];
-          }
+            state.overallPos,
+            chunk.Content[state.inChunkPos]
+          ),
+          transitionMilliSeconds,
+        ];
+      }
+    case "DELETE":
+      if (state.inChunkPos === chunk.Content.length) {
+        return [
+          nextChunkState(state, chunks),
+          sourceCode,
+          transitionMilliSeconds,
+        ];
+      } else {
+        // keep processing this chunk
+        const nextChunkPos = state.inChunkPos + 1;
+        const nextOverallPos = state.overallPos;
+        return [
+          {
+            kind: "InProgress",
+            currentChunk: state.currentChunk,
+            inChunkPos: nextChunkPos,
+            overallPos: nextOverallPos,
+          },
+          removeChar(sourceCode, state.overallPos),
+          transitionMilliSeconds,
+        ];
       }
   }
 };
@@ -155,8 +135,9 @@ export const SourceCodeView = ({ sourceCode, chunks }: SourceCodeViewProps) => {
     if (state.kind === "Init") {
       setSourceCode(sourceCode);
       setState({
-        kind: "ReadyForChunk",
+        kind: "InProgress",
         currentChunk: 0,
+        inChunkPos: 0,
         overallPos: 0,
       });
     } else if (state.kind === "Done") {
