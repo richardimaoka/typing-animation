@@ -35,7 +35,12 @@ const nextChunkState = (
 ): InProgress | Done => {
   const chunk = chunks[state.currentChunk];
   const nextChunk = state.currentChunk + 1;
-  const nextOverallPos = state.overallPos + chunk.Content.length;
+
+  const nextOverallPos =
+    chunk.Type === "EQUAL"
+      ? state.overallPos + chunk.Content.length // if "EQAUL", chunk.Content is skipped and offset the overallPos
+      : state.overallPos; // if "ADD" or "DELETE", state.overallPos should already be set to chunk's last position
+
   if (nextChunk > chunks.length - 1) {
     return { kind: "Done" };
   } else {
@@ -72,29 +77,18 @@ const transition = (
       switch (chunk.Type) {
         case "EQUAL":
           return [
-            nextChunkState(state, chunks),
+            nextChunkState(state, chunks), // skip to the next chunk
             sourceCode,
             transitionMilliSeconds,
           ];
         case "ADD":
           if (state.inChunkPos === chunk.Content.length) {
             // this chunk is finished
-            const nextChunk = state.currentChunk + 1;
-            const nextOverallPos = state.overallPos;
-            if (nextChunk > chunks.length - 1) {
-              return [{ kind: "Done" }, sourceCode, 0];
-            } else {
-              return [
-                {
-                  kind: "InProgress", //ReadyForChunk
-                  currentChunk: nextChunk,
-                  inChunkPos: 0,
-                  overallPos: nextOverallPos,
-                },
-                sourceCode,
-                transitionMilliSeconds,
-              ];
-            }
+            return [
+              nextChunkState(state, chunks),
+              sourceCode,
+              transitionMilliSeconds,
+            ];
           } else {
             // keep processing this chunk
             const nextNewLinePos = chunk.Content.indexOf("\n");
@@ -117,23 +111,11 @@ const transition = (
           }
         case "DELETE":
           if (state.inChunkPos === chunk.Content.length) {
-            // this chunk is finished
-            const nextChunk = state.currentChunk + 1;
-            const nextOverallPos = state.overallPos;
-            if (nextChunk > chunks.length - 1) {
-              return [{ kind: "Done" }, sourceCode, 0];
-            } else {
-              return [
-                {
-                  kind: "InProgress", //ReadyForChunk
-                  currentChunk: nextChunk,
-                  inChunkPos: 0,
-                  overallPos: nextOverallPos,
-                },
-                sourceCode,
-                transitionMilliSeconds,
-              ];
-            }
+            return [
+              nextChunkState(state, chunks),
+              sourceCode,
+              transitionMilliSeconds,
+            ];
           } else {
             // keep processing this chunk
             const nextChunkPos = state.inChunkPos + 1;
