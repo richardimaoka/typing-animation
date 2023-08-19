@@ -15,6 +15,7 @@ interface InProgress {
   currentChunk: number;
   inChunkPos: number;
   overallPos: number;
+  seekNewLine: boolean;
 }
 
 interface Done {
@@ -38,10 +39,11 @@ const transition = (
       } else {
         return [
           {
-            kind: "InProgress",
+            kind: "InProgress", //ReadyForChunk
             currentChunk: nextChunk,
             inChunkPos: 0,
             overallPos: state.overallPos + chunk.Content.length,
+            seekNewLine: true,
           },
           sourceCode,
         ];
@@ -55,16 +57,18 @@ const transition = (
         } else {
           return [
             {
-              kind: "InProgress",
+              kind: "InProgress", //ReadyForChunk
               currentChunk: nextChunk,
               inChunkPos: 0,
               overallPos: state.overallPos,
+              seekNewLine: true,
             },
             sourceCode,
           ];
         }
       } else {
         // keep processing this chunk
+        const nextNewLinePos = chunk.Content.indexOf("\n");
         const nextChunkPos = state.inChunkPos + 1;
         const nextOverallPos = state.overallPos + 1;
         return [
@@ -73,6 +77,7 @@ const transition = (
             currentChunk: state.currentChunk,
             inChunkPos: nextChunkPos,
             overallPos: nextOverallPos,
+            seekNewLine: false,
           },
           insertChar(
             sourceCode,
@@ -90,10 +95,11 @@ const transition = (
         } else {
           return [
             {
-              kind: "InProgress",
+              kind: "InProgress", //ReadyForChunk
               currentChunk: nextChunk,
               inChunkPos: 0,
               overallPos: state.overallPos,
+              seekNewLine: true,
             },
             sourceCode,
           ];
@@ -108,6 +114,7 @@ const transition = (
             currentChunk: state.currentChunk,
             inChunkPos: nextChunkPos,
             overallPos: nextOverallPos,
+            seekNewLine: false,
           },
           removeChar(sourceCode, state.overallPos),
         ];
@@ -141,6 +148,7 @@ export const SourceCodeView = ({ sourceCode, chunks }: SourceCodeViewProps) => {
         currentChunk: 0,
         inChunkPos: 0,
         overallPos: 0,
+        seekNewLine: true,
       });
     } else if (state.kind === "Done") {
       return;
@@ -149,7 +157,7 @@ export const SourceCodeView = ({ sourceCode, chunks }: SourceCodeViewProps) => {
       setTimeout(() => {
         setState(newState);
         setSourceCode(newSourceCode);
-      }, 1);
+      }, 20);
     }
   }, [chunks, sourceCode, src, state]);
 
