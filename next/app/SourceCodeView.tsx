@@ -6,8 +6,9 @@ export interface Chunk {
   Type: "ADD" | "DELETE" | "EQUAL";
 }
 
-interface Initializing {
-  kind: "Initializing";
+interface ReadyForChunk {
+  kind: "ReadyForChunk";
+  iChunk: number;
 }
 
 interface InProgress {
@@ -22,7 +23,7 @@ interface Done {
   kind: "Done";
 }
 
-type State = Initializing | InProgress | Done;
+type State = ReadyForChunk | InProgress | Done;
 
 const transition = (
   chunks: Chunk[],
@@ -143,11 +144,12 @@ interface SourceCodeViewProps {
 export const SourceCodeView = ({ sourceCode, chunks }: SourceCodeViewProps) => {
   const [src, setSourceCode] = useState("");
   const [state, setState] = useState<State>({
-    kind: "Initializing",
+    kind: "ReadyForChunk",
+    iChunk: 0,
   });
 
   useEffect(() => {
-    if (state.kind === "Initializing") {
+    if (state.kind === "ReadyForChunk") {
       setSourceCode(sourceCode);
       setState({
         kind: "InProgress",
