@@ -28,14 +28,15 @@ const transition = (
   chunks: Chunk[],
   state: InProgress,
   sourceCode: string
-): [State, string] => {
+): [State, string, number] => {
   const chunk = chunks[state.currentChunk];
+  const transitionMilliSeconds = 20;
 
   switch (chunk.Type) {
     case "EQUAL":
       const nextChunk = state.currentChunk + 1;
       if (nextChunk > chunks.length - 1) {
-        return [{ kind: "Done" }, sourceCode];
+        return [{ kind: "Done" }, sourceCode, 0];
       } else {
         return [
           {
@@ -46,6 +47,7 @@ const transition = (
             seekNewLine: true,
           },
           sourceCode,
+          transitionMilliSeconds,
         ];
       }
     case "ADD":
@@ -53,7 +55,7 @@ const transition = (
         // this chunk is finished
         const nextChunk = state.currentChunk + 1;
         if (nextChunk > chunks.length - 1) {
-          return [{ kind: "Done" }, sourceCode];
+          return [{ kind: "Done" }, sourceCode, 0];
         } else {
           return [
             {
@@ -64,6 +66,7 @@ const transition = (
               seekNewLine: true,
             },
             sourceCode,
+            transitionMilliSeconds,
           ];
         }
       } else {
@@ -84,6 +87,7 @@ const transition = (
             state.overallPos,
             chunk.Content[state.inChunkPos]
           ),
+          transitionMilliSeconds,
         ];
       }
     case "DELETE":
@@ -91,7 +95,7 @@ const transition = (
         // this chunk is finished
         const nextChunk = state.currentChunk + 1;
         if (nextChunk > chunks.length - 1) {
-          return [{ kind: "Done" }, sourceCode];
+          return [{ kind: "Done" }, sourceCode, 0];
         } else {
           return [
             {
@@ -102,6 +106,7 @@ const transition = (
               seekNewLine: true,
             },
             sourceCode,
+            transitionMilliSeconds,
           ];
         }
       } else {
@@ -117,6 +122,7 @@ const transition = (
             seekNewLine: false,
           },
           removeChar(sourceCode, state.overallPos),
+          transitionMilliSeconds,
         ];
       }
   }
@@ -153,11 +159,15 @@ export const SourceCodeView = ({ sourceCode, chunks }: SourceCodeViewProps) => {
     } else if (state.kind === "Done") {
       return;
     } else {
-      const [newState, newSourceCode] = transition(chunks, state, src);
+      const [newState, newSourceCode, transitionMilliSeconds] = transition(
+        chunks,
+        state,
+        src
+      );
       setTimeout(() => {
         setState(newState);
         setSourceCode(newSourceCode);
-      }, 20);
+      }, transitionMilliSeconds);
     }
   }, [chunks, sourceCode, src, state]);
 
