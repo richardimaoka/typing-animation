@@ -24,16 +24,17 @@ interface Done {
 type State = Init | InProgress | Done;
 
 const nextChunkState = (
-  state: InProgress,
+  overallPos: number,
+  currentChunk: number,
   chunks: Chunk[]
 ): InProgress | Done => {
-  const chunk = chunks[state.currentChunk];
-  const nextChunk = state.currentChunk + 1;
+  const chunk = chunks[currentChunk];
+  const nextChunk = currentChunk + 1;
 
   const nextOverallPos =
     chunk.Type === "EQUAL"
-      ? state.overallPos + chunk.Content.length // if "EQAUL", chunk.Content is skipped and offset the overallPos
-      : state.overallPos; // if "ADD" or "DELETE", state.overallPos should already be set to chunk's last position
+      ? overallPos + chunk.Content.length // if "EQAUL", chunk.Content is skipped and offset the overallPos
+      : overallPos; // if "ADD" or "DELETE", state.overallPos should already be set to chunk's last position
 
   if (nextChunk > chunks.length - 1) {
     return { kind: "Done" };
@@ -58,7 +59,7 @@ const transition = (
   switch (chunk.Type) {
     case "EQUAL":
       return [
-        nextChunkState(state, chunks), // skip to the next chunk
+        nextChunkState(state.overallPos, state.currentChunk, chunks), // skip to the next chunk
         sourceCode,
         transitionMilliSeconds,
       ];
@@ -66,7 +67,7 @@ const transition = (
       if (state.inChunkPos === chunk.Content.length) {
         // this chunk is finished
         return [
-          nextChunkState(state, chunks),
+          nextChunkState(state.overallPos, state.currentChunk, chunks),
           sourceCode,
           transitionMilliSeconds,
         ];
@@ -93,7 +94,7 @@ const transition = (
     case "DELETE":
       if (state.inChunkPos === chunk.Content.length) {
         return [
-          nextChunkState(state, chunks),
+          nextChunkState(state.overallPos, state.currentChunk, chunks),
           sourceCode,
           transitionMilliSeconds,
         ];
