@@ -17,11 +17,26 @@ interface InProgress {
   overallPos: number;
 }
 
+interface SeekNewLine {
+  kind: "SeekNewLine";
+  currentChunk: number;
+  inChunkPos: number;
+  overallPos: number;
+}
+
+interface ProcessChars {
+  kind: "ProcessChars";
+  currentChunk: number;
+  inChunkPos: number;
+  overallPos: number;
+  nextNewLinePos: number;
+}
+
 interface Done {
   kind: "Done";
 }
 
-type State = Init | InProgress | Done;
+type State = Init | InProgress | SeekNewLine | ProcessChars | Done;
 
 const nextChunkState = (
   overallPos: number,
@@ -48,9 +63,73 @@ const nextChunkState = (
   }
 };
 
+const nextAddChunkState = (
+  state: InProgress | SeekNewLine | ProcessChars,
+  sourceCode: string,
+  chunks: Chunk[]
+): [InProgress | SeekNewLine | ProcessChars, string] => {
+  const chunk = chunks[state.currentChunk];
+
+  switch (state.kind) {
+    case "InProgress":
+      return [
+        {
+          kind: "SeekNewLine",
+          currentChunk: state.currentChunk,
+          inChunkPos: state.inChunkPos,
+          overallPos: state.overallPos,
+        },
+        sourceCode,
+      ];
+    case "SeekNewLine":
+      const s = chunk.Content.substring(state.inChunkPos);
+      let nextNewLinePos = s.indexOf("\n");
+      if (nextNewLinePos > -1) {
+        nextNewLinePos = state.inChunkPos + nextNewLinePos;
+      }
+      return [
+        {
+          kind: "ProcessChars",
+          currentChunk: state.currentChunk,
+          inChunkPos: state.inChunkPos,
+          overallPos: state.overallPos,
+          nextNewLinePos: nextNewLinePos,
+        },
+        insertChar(sourceCode, state.overallPos, "\n"),
+      ];
+    case "ProcessChars":
+      if (state.inChunkPos === state.nextNewLinePos) {
+        return [
+          {
+            kind: "SeekNewLine",
+            currentChunk: state.currentChunk,
+            inChunkPos: state.inChunkPos + 1,
+            overallPos: state.overallPos + 1,
+          },
+          sourceCode, //skip inserting '\n' because it must have been processed in earlier SeekNewLine state
+        ];
+      } else {
+        return [
+          {
+            kind: "ProcessChars",
+            currentChunk: state.currentChunk,
+            inChunkPos: state.inChunkPos + 1,
+            overallPos: state.overallPos + 1,
+            nextNewLinePos: state.nextNewLinePos,
+          },
+          insertChar(
+            sourceCode,
+            state.overallPos,
+            chunk.Content[state.inChunkPos]
+          ),
+        ];
+      }
+  }
+};
+
 const transition = (
   chunks: Chunk[],
-  state: InProgress,
+  state: InProgress | SeekNewLine | ProcessChars,
   sourceCode: string
 ): [State, string, number] => {
   const transitionMilliSeconds = 20;
@@ -73,23 +152,8 @@ const transition = (
         ];
       } else {
         // keep processing this chunk
-        const nextNewLinePos = chunk.Content.indexOf("\n");
-        const nextChunkPos = state.inChunkPos + 1;
-        const nextOverallPos = state.overallPos + 1;
-        return [
-          {
-            kind: "InProgress",
-            currentChunk: state.currentChunk,
-            inChunkPos: nextChunkPos,
-            overallPos: nextOverallPos,
-          },
-          insertChar(
-            sourceCode,
-            state.overallPos,
-            chunk.Content[state.inChunkPos]
-          ),
-          transitionMilliSeconds,
-        ];
+        const [newState, newSrc] = nextAddChunkState(state, sourceCode, chunks);
+        return [newState, newSrc, transitionMilliSeconds];
       }
     case "DELETE":
       if (state.inChunkPos === chunk.Content.length) {
