@@ -7,15 +7,15 @@ interface State {
   repository: string;
   prevCommit: string;
   currentCommit: string;
-  filename: string;
+  filepath: string;
 }
 
 export default function Home() {
   const [state, setState] = useState<State>({
-    repository: "",
-    prevCommit: "",
-    currentCommit: "",
-    filename: "",
+    repository: "typing-animation",
+    prevCommit: "7d22d71cca1c9ba3c280a78d7311613e785eb5ee",
+    currentCommit: "99d5c1c214319cc7b0da69e692c24f639095bc1a",
+    filepath: "next/app/SourceCodeView.tsx",
   });
 
   const chunks: Chunk[] = [
@@ -66,6 +66,7 @@ export default function Home() {
     };
   </script>
 </html>`;
+
   return (
     <main>
       <div>
@@ -98,12 +99,13 @@ export default function Home() {
       <div>
         <input
           type="text"
-          placeholder="filename"
+          placeholder="filepath"
           onChange={(e) =>
-            setState({ ...state, filename: e.currentTarget.value })
+            setState({ ...state, filepath: e.currentTarget.value })
           }
         />
       </div>
+      <div>{`https://raw.githubusercontent.com/richardimaoka/${state.repository}/${state.prevCommit}/${state.filepath}`}</div>
       {/* <SourceCodeView sourceCode={sourceCode} chunks={chunks} /> */}
     </main>
   );
