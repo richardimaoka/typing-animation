@@ -1,6 +1,23 @@
+"use client";
+
+import { useState } from "react";
 import { Chunk, SourceCodeView } from "./SourceCodeView";
 
+interface State {
+  repository: string;
+  prevCommit: string;
+  currentCommit: string;
+  filename: string;
+}
+
 export default function Home() {
+  const [state, setState] = useState<State>({
+    repository: "",
+    prevCommit: "",
+    currentCommit: "",
+    filename: "",
+  });
+
   const chunks: Chunk[] = [
     {
       Content:
@@ -51,7 +68,43 @@ export default function Home() {
 </html>`;
   return (
     <main>
-      <SourceCodeView sourceCode={sourceCode} chunks={chunks} />
+      <div>
+        <input
+          type="text"
+          placeholder="repository"
+          onChange={(e) =>
+            setState({ ...state, repository: e.currentTarget.value })
+          }
+        />
+      </div>
+      <div>
+        <input
+          type="text"
+          placeholder="prev commit"
+          onChange={(e) =>
+            setState({ ...state, prevCommit: e.currentTarget.value })
+          }
+        />
+      </div>
+      <div>
+        <input
+          type="text"
+          placeholder="current commit"
+          onChange={(e) =>
+            setState({ ...state, currentCommit: e.currentTarget.value })
+          }
+        />
+      </div>
+      <div>
+        <input
+          type="text"
+          placeholder="filename"
+          onChange={(e) =>
+            setState({ ...state, filename: e.currentTarget.value })
+          }
+        />
+      </div>
+      {/* <SourceCodeView sourceCode={sourceCode} chunks={chunks} /> */}
     </main>
   );
 }
