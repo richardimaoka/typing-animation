@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Chunk, SourceCodeView } from "./SourceCodeView";
 
 interface State {
@@ -67,12 +67,24 @@ export default function Home() {
   </script>
 </html>`;
 
+  useEffect(() => {
+    const a = fetch(
+      `https://raw.githubusercontent.com/richardimaoka/${state.repository}/${state.prevCommit}/${state.filepath}`
+    ).then((response) => response.text());
+    const b = fetch(
+      `https://raw.githubusercontent.com/richardimaoka/${state.repository}/${state.currentCommit}/${state.filepath}`
+    ).then((response) => response.text());
+
+    Promise.all([a, b]).then((c) => c);
+  });
+
   return (
     <main>
       <div>
         <input
           type="text"
           placeholder="repository"
+          value={state.repository}
           onChange={(e) =>
             setState({ ...state, repository: e.currentTarget.value })
           }
@@ -82,6 +94,7 @@ export default function Home() {
         <input
           type="text"
           placeholder="prev commit"
+          value={state.prevCommit}
           onChange={(e) =>
             setState({ ...state, prevCommit: e.currentTarget.value })
           }
@@ -91,6 +104,7 @@ export default function Home() {
         <input
           type="text"
           placeholder="current commit"
+          value={state.currentCommit}
           onChange={(e) =>
             setState({ ...state, currentCommit: e.currentTarget.value })
           }
@@ -100,13 +114,13 @@ export default function Home() {
         <input
           type="text"
           placeholder="filepath"
+          value={state.filepath}
           onChange={(e) =>
             setState({ ...state, filepath: e.currentTarget.value })
           }
         />
       </div>
-      <div>{`https://raw.githubusercontent.com/richardimaoka/${state.repository}/${state.prevCommit}/${state.filepath}`}</div>
-      {/* <SourceCodeView sourceCode={sourceCode} chunks={chunks} /> */}
+      {<SourceCodeView sourceCode={sourceCode} chunks={chunks} />}
     </main>
   );
 }
