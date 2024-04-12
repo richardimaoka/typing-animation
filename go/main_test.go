@@ -13,6 +13,10 @@ func Test(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.inputFile, func(t *testing.T) {
 
+			//copy before.txt
+			//change
+			//write to tempfile
+			//delete tempfile
 		})
 	}
 }
