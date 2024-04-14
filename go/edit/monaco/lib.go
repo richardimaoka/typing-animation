@@ -8,9 +8,10 @@ type Range struct {
 	EndColumn      int
 }
 
-// represents Monaco's ISingleEditOperation
+// represents Monaco's IIdentifiedSingleEditOperation
 //   https://microsoft.github.io/monaco-editor/docs.html#interfaces/editor.IIdentifiedSingleEditOperation.html
 type EditOperation struct {
+	Id    string
 	Range Range
 	Text  string
 }

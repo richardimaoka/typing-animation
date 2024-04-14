@@ -25,12 +25,9 @@ func TestSeek(t *testing.T) {
 }
 
 func TestInsert(t *testing.T) {
-	h, err := NewFileHandler("testdata/test.txt")
+	err := Insert("testdata/test.txt", Position{Line: 2, Character: 3}, "abc")
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = h.Insert(Position{Line: 2, Character: 3}, "abc")
-	if err != nil {
-		t.Fatal(err)
-	}
+
 }
