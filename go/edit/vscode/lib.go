@@ -125,18 +125,19 @@ func Insert(filename string, position Position, newText string) error {
 	if isPrefix {
 		return fmt.Errorf("line is too long! This function does not handle `isPrefix = true` returned by bufio.ReadLine()")
 	}
-	// read the position.Line up to the position.Character
+	// copy the position.Line up to the position.Character
 	bytesAt := 0
-	for i := 0; i <= position.Character; i++ {
+	for j := 0; j <= position.Character; j++ {
 		r, size := utf8.DecodeRune(line[bytesAt:])
 		if size == 0 {
-			return fmt.Errorf("argument position.Character = %d, but it cannnot be greater than %d, the number of characters at line = %d", position.Character, i, position.Line)
+			return fmt.Errorf("argument position.Character = %d, but it cannnot be greater than %d, the number of characters at line = %d", position.Character, j, position.Line)
 		}
 		builder.WriteRune(r)
 		bytesAt += size
 	}
 	// insert newText
 	builder.WriteString(newText)
+	// copy the rest of the line
 	builder.WriteString(string(line[bytesAt:]))
 	builder.WriteString("\n")
 
@@ -160,6 +161,124 @@ func Insert(filename string, position Position, newText string) error {
 
 	// 5. Write back to the file
 	f.WriteAt([]byte(builder.String()), 0)
+
+	return nil
+}
+
+func Delete(filename string, delRange Range) error {
+	// 1. Validate arguments
+	if delRange.Start.Line < 0 {
+		return fmt.Errorf("argument delRange.Start.Line = %d, but it cannnot be a negative number", delRange.Start.Line)
+	}
+	if delRange.Start.Character < 0 {
+		return fmt.Errorf("argument delRange.Start.Character = %d, but it cannnot be a negative number", delRange.Start.Character)
+	}
+
+	if delRange.End.Line < 0 {
+		return fmt.Errorf("argument delRange.End.Line = %d, but it cannnot be a negative number", delRange.End.Line)
+	}
+	if delRange.End.Character < 0 {
+		return fmt.Errorf("argument delRange.End.Character = %d, but it cannnot be a negative number", delRange.End.Character)
+	}
+
+	if delRange.Start.Line > delRange.End.Line {
+		return fmt.Errorf("argument delRange.Start.Line = %d is greater than delRange.End.Line = %d", delRange.Start.Line, delRange.End.Line)
+	}
+	if delRange.Start.Line == delRange.End.Line && delRange.Start.Character > delRange.End.Character {
+		return fmt.Errorf(
+			"argument delRange.Start.Character = %d is greater than delRange.End.Character = %d on the same line %d, but ",
+			delRange.Start.Character, delRange.End.Character, delRange.End.Line,
+		)
+	}
+
+	// 2. Open file
+	f, err := os.OpenFile(filename, syscall.O_RDWR, 0666)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	bufReader := bufio.NewReader(f)
+	var builder strings.Builder
+
+	// 2. Copy up to the start line - 1
+	for i := 0; i < delRange.Start.Line; i++ {
+		line, isPrefix, err := bufReader.ReadLine()
+		if err != nil {
+			return err
+		}
+		if isPrefix {
+			return fmt.Errorf(":ine is too long! This function does not handle `isPrefix = true` returned by bufio.ReadLine()")
+		}
+		builder.WriteString(string(line))
+		builder.WriteString("\n")
+	}
+
+	// 3. Process the start line
+	// read the position.Line
+	line, isPrefix, err := bufReader.ReadLine()
+	if err != nil {
+		return err
+	}
+	if isPrefix {
+		return fmt.Errorf("line is too long! This function does not handle `isPrefix = true` returned by bufio.ReadLine()")
+	}
+	// copy the position.Line up to the prev char of start
+	bytesAt := 0
+	for c := 0; c < delRange.Start.Character; c++ {
+		r, size := utf8.DecodeRune(line[bytesAt:])
+		if size == 0 {
+			return fmt.Errorf("argument delRange.Start.Character = %d, but it cannnot be greater than %d, the number of characters at line = %d", delRange.Start.Character, c, delRange.Start.Line)
+		}
+		builder.WriteRune(r)
+		bytesAt += size
+	}
+
+	// 4. If the start line == end line
+	if delRange.Start.Line == delRange.End.Line {
+		bytesAt := 0
+		for j := delRange.Start.Character; j <= delRange.End.Character; j++ {
+			_, size := utf8.DecodeRune(line[bytesAt:])
+			if size == 0 {
+				//TODO: change error
+				return fmt.Errorf("argument delRange.End.Character = %d, but it cannnot be greater than %d, the number of characters at line = %d", delRange.End.Character, j, delRange.End.Line)
+			}
+			// incremental skip
+			bytesAt += size
+		}
+
+		// copy the rest of the line
+		builder.WriteString(string(line[bytesAt:]))
+		builder.WriteString("\n")
+	}
+
+	// 5. Delete up to the end line - 1
+	for i := delRange.Start.Line; i < delRange.End.Line; i++ {
+		_, isPrefix, err := bufReader.ReadLine()
+		if err != nil {
+			return err
+		}
+		if isPrefix {
+			return fmt.Errorf("line is too long! This function does not handle `isPrefix = true` returned by bufio.ReadLine()")
+		}
+	}
+
+	// // 4. Copy the rest, until the end of file
+	// for i := delRange.End.Line; ; i++ {
+	// 	line, isPrefix, err := bufReader.ReadLine()
+	// 	if err == io.EOF {
+	// 		break
+	// 	} else if err != nil {
+	// 		return err
+	// 	}
+	// 	if isPrefix {
+	// 		return fmt.Errorf(":ine is too long! This function does not handle `isPrefix = true` returned by bufio.ReadLine()")
+	// 	}
+	// 	builder.WriteString(string(line))
+	// 	builder.WriteString("\n")
+	// }
+
+	// // 5. Write back to the file
+	// f.WriteAt([]byte(builder.String()), 0)
 
 	return nil
 }

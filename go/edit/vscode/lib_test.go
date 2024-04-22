@@ -38,3 +38,11 @@ func TestInsert(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestDelete(t *testing.T) {
+	r := Range{Position{Line: 2, Character: 2}, Position{Line: 2, Character: 3}}
+	err := Delete("testdata/test_delete.txt", r)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
