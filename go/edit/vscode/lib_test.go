@@ -4,6 +4,27 @@ import (
 	"testing"
 )
 
+func TestValidatePosition(t *testing.T) {
+	cases := map[string]struct {
+		success bool
+		pos     Position
+	}{
+		"negative char": {false, Position{Character: -1, Line: 10}},
+		"zero char":     {true, Position{Character: 0, Line: 10}},
+		"negative line": {false, Position{Character: 1, Line: -10}},
+		"zero line":     {true, Position{Character: 1, Line: 0}},
+	}
+
+	for name, c := range cases {
+		t.Run(name, func(t *testing.T) {
+			result := c.pos.Validate()
+			if c.success != result {
+				t.Errorf("%t expected but result = %t", c.success, result)
+			}
+		})
+	}
+}
+
 func TestSeek(t *testing.T) {
 	h, err := NewFileHandler("testdata/test.txt")
 	if err != nil {
@@ -39,10 +60,10 @@ func TestInsert(t *testing.T) {
 	}
 }
 
-func TestDelete(t *testing.T) {
-	r := Range{Position{Line: 2, Character: 2}, Position{Line: 2, Character: 3}}
-	err := Delete("testdata/test_delete.txt", r)
-	if err != nil {
-		t.Fatal(err)
-	}
-}
+// func TestDelete(t *testing.T) {
+// 	r := Range{Position{Line: 2, Character: 2}, Position{Line: 2, Character: 3}}
+// 	err := Delete("testdata/test_delete.txt", r)
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// }

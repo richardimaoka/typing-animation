@@ -12,9 +12,10 @@ import (
 )
 
 // Same as VS Code extention API's Position
+// https://code.visualstudio.com/api/references/vscode-api#Position
 type Position struct {
-	Character int //The zero-based character value.
 	Line      int //The zero-based line value.
+	Character int //The zero-based character value.
 }
 
 type Range struct {
@@ -24,6 +25,11 @@ type Range struct {
 
 type FileHandler struct {
 	file *os.File
+}
+
+func (p Position) Validate() bool {
+	// Both is zero-based
+	return p.Character >= 0 && p.Line >= 0
 }
 
 func NewFileHandler(filename string) (*FileHandler, error) {
