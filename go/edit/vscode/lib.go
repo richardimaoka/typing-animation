@@ -32,6 +32,21 @@ func (p Position) Validate() bool {
 	return p.Character >= 0 && p.Line >= 0
 }
 
+func (p Position) LessThanOrEqualTo(target Position) bool {
+	if p.Line < target.Line {
+		return true
+	} else if p.Line == target.Line {
+		return p.Character <= target.Character
+	} else {
+		// p.Line > target.Line
+		return false
+	}
+}
+
+func (r Range) Validate() bool {
+	return r.Start.Validate() && r.End.Validate()
+}
+
 func NewFileHandler(filename string) (*FileHandler, error) {
 	f, err := os.OpenFile(filename, syscall.O_RDWR, 0666)
 	if err != nil {
