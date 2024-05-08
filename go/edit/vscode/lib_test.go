@@ -52,18 +52,6 @@ func TestLessThanOrEqualToPosition(t *testing.T) {
 	}
 }
 
-// from and to are zero-based line numbers
-func extractLines(multiLineString string, fromLine, toLine int) string {
-	split := strings.Split(multiLineString, "\n")
-	joined := strings.Join(split[fromLine:toLine+1], "\n") // by `[fromLine:toLine+1]` toLine is included, toLine+1 is excluded
-
-	if toLine < len(split) {
-		return joined + "\n"
-	} else {
-		return joined
-	}
-}
-
 func TestCopyUpTo(t *testing.T) {
 	original := `Hello this is a test file.
 There are multiple lines
@@ -126,7 +114,6 @@ writtenされています。`,
 
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
-
 			var builder strings.Builder
 			bufReader := bufio.NewReader(strings.NewReader(c.original))
 			err := copyUpTo(bufReader, &builder, c.toLine)
@@ -135,6 +122,51 @@ writtenされています。`,
 			}
 
 			result := builder.String()
+			if c.expected != result {
+				t.Errorf("%s", cmp.Diff(c.expected, result))
+			}
+		})
+	}
+}
+
+func TestIinsertInLine(t *testing.T) {
+	cases := map[string]struct {
+		original string
+		pos      Position
+		newText  string
+		expected string
+		err      error
+	}{
+		"0": {
+			//              1         2
+			//    01234567890123456789012345
+			/**/ `Hello this is a test file.`,
+			Position{Line: 0, Character: 0},
+			"Good morning. ",
+			`Good morning. Hello this is a test file.`,
+			nil,
+		},
+		"1": {
+			//              1         2
+			//    01234567890123456789012345
+			/**/ `Hello this is a test file.`,
+			Position{Line: 0, Character: 15},
+			"n amazing",
+			`Hello this is a` + "n amazing " + `test file.`,
+			nil,
+		},
+	}
+
+	for name, c := range cases {
+		t.Run(name, func(t *testing.T) {
+			result, err := insertInLine(c.pos, c.newText, []byte(c.original))
+			if err != nil {
+				if c.err == nil {
+					t.Fatalf("error: %s", err)
+				}
+				return // expected error
+			}
+
 			if c.expected != result {
 				t.Errorf("%s", cmp.Diff(c.expected, result))
 			}

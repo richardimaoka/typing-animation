@@ -119,9 +119,31 @@ func copyUpTo(from *bufio.Reader, to *strings.Builder, uptoLine int) error {
 	return nil
 }
 
-// func insertAtLine(from *bufio.Reader, to *strings.Builder, line, upToChar int) error {
-// 	return nil
-// }
+func insertInLine(pos Position, newText string, line []byte) (string, error) {
+	var builder strings.Builder
+
+	// copy the position.Line up to the position.Character
+	byteOffset := 0
+	for i := 0; i < pos.Character; i++ {
+		r, size := utf8.DecodeRune(line[byteOffset:])
+		if r == utf8.RuneError {
+			if size == 0 {
+				return "", fmt.Errorf("trying to insert '%s' at char = %d, line = %d, but there is only %d chars on the line", newText, pos.Character, pos.Character, i)
+			}
+		}
+
+		builder.WriteRune(r)
+		byteOffset += size
+	}
+
+	// insert newText
+	builder.WriteString(newText)
+
+	// copy the rest of the line
+	builder.WriteString(string(line[byteOffset:]))
+
+	return builder.String(), nil
+}
 
 // func copyUntilEend(from *bufio.Reader, to *strings.Builder, uptoLine int) error {
 // 	return nil
@@ -143,21 +165,12 @@ func Insert(filename string, position Position, newText string) error {
 		return err
 	}
 	defer f.Close()
+
 	bufReader := bufio.NewReader(f)
 	var builder strings.Builder
 
 	// 2. Copy up to the prev line of position.Line
-	for i := 0; i < position.Line; i++ {
-		line, isPrefix, err := bufReader.ReadLine()
-		if err != nil {
-			return err
-		}
-		if isPrefix {
-			return fmt.Errorf(":ine is too long! This function does not handle `isPrefix = true` returned by bufio.ReadLine()")
-		}
-		builder.WriteString(string(line))
-		builder.WriteString("\n")
-	}
+	copyUpTo(bufReader, &builder, position.Line-1)
 
 	// 3. Process the position.Line
 	// read the position.Line
