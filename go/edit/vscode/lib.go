@@ -27,9 +27,23 @@ type FileHandler struct {
 	file *os.File
 }
 
-func (p Position) Validate() bool {
-	// Both is zero-based
-	return p.Character >= 0 && p.Line >= 0
+func (p Position) Validate() error {
+	errors := []string{}
+
+	// Both Line and Character is zero-based
+	if p.Character < 0 {
+		errors = append(errors, fmt.Sprintf("negative character = %d", p.Character))
+	}
+
+	if p.Line < 0 {
+		errors = append(errors, fmt.Sprintf("negative line = %d", p.Line))
+	}
+
+	if len(errors) > 0 {
+		return fmt.Errorf("invalid position, %s", strings.Join(errors, ", "))
+	}
+
+	return nil
 }
 
 func (p Position) LessThanOrEqualTo(target Position) bool {
@@ -43,8 +57,27 @@ func (p Position) LessThanOrEqualTo(target Position) bool {
 	}
 }
 
-func (r Range) Validate() bool {
-	return r.Start.Validate() && r.End.Validate() && r.Start.LessThanOrEqualTo(r.End)
+func (r Range) Validate() error {
+	errs := []string{}
+
+	// Both Line and Character is zero-based
+	if err := r.Start.Validate(); err != nil {
+		errs = append(errs, fmt.Sprintf("range start error, %s", err))
+	}
+
+	if err := r.End.Validate(); err != nil {
+		errs = append(errs, fmt.Sprintf("range end error, %s", err))
+	}
+
+	if len(errs) > 0 {
+		return errors.New(strings.Join(errs, ", "))
+	}
+
+	if !r.Start.LessThanOrEqualTo(r.End) {
+		return fmt.Errorf("invalid range, start %+v > end %+v", r.Start, r.End)
+	}
+
+	return nil
 }
 
 func NewFileHandler(filename string) (*FileHandler, error) {

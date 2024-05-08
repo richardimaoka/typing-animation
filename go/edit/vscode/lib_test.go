@@ -21,9 +21,12 @@ func TestValidatePosition(t *testing.T) {
 
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
-			result := c.pos.Validate()
-			if c.success != result {
-				t.Errorf("%t expected but result = %t", c.success, result)
+			err := c.pos.Validate()
+			if err != nil && c.success {
+				t.Fatalf("unexpected error %s", err)
+			}
+			if err == nil && !c.success {
+				t.Fatalf("error expected but not encounterd")
 			}
 		})
 	}
