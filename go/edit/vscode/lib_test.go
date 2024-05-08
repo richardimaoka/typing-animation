@@ -64,17 +64,20 @@ writtenされています。`
 		original string
 		toLine   int
 		expected string
+		err      bool
 	}{
 		"0": {
 			original,
 			0,
 			`Hello this is a test file.` + "\n",
+			false,
 		},
 		"1": {
 			original,
 			1,
 			`Hello this is a test file.
 There are multiple lines` + "\n",
+			false,
 		},
 		"2": {
 			original,
@@ -82,6 +85,7 @@ There are multiple lines` + "\n",
 			`Hello this is a test file.
 There are multiple lines
 in this text file.` + "\n",
+			false,
 		},
 		"3": {
 			original,
@@ -90,6 +94,7 @@ in this text file.` + "\n",
 There are multiple lines
 in this text file.
 And この文章のいくつかのpartは` + "\n",
+			false,
 		},
 		"4": {
 			original,
@@ -99,6 +104,7 @@ There are multiple lines
 in this text file.
 And この文章のいくつかのpartは
 英語とJapaneseを混ぜて` + "\n",
+			false,
 		},
 		"5": {
 			original,
@@ -109,6 +115,14 @@ in this text file.
 And この文章のいくつかのpartは
 英語とJapaneseを混ぜて
 writtenされています。`,
+			false,
+		},
+		"6": {
+			//ERROR when trying to read more lines than exist
+			original,
+			6,
+			"",
+			true,
 		},
 	}
 
@@ -116,9 +130,13 @@ writtenされています。`,
 		t.Run(name, func(t *testing.T) {
 			var builder strings.Builder
 			bufReader := bufio.NewReader(strings.NewReader(c.original))
+
 			err := copyUpTo(bufReader, &builder, c.toLine)
 			if err != nil {
-				t.Errorf("error: %s", err)
+				if c.err {
+					return // expected error
+				}
+				t.Fatalf("unexpected error: %s", err)
 			}
 
 			result := builder.String()

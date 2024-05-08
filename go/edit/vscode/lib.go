@@ -106,11 +106,19 @@ func (f *FileHandler) offset(position Position) (int, error) {
 }
 
 func copyUpTo(from *bufio.Reader, to *strings.Builder, uptoLine int) error {
+	if uptoLine < 0 {
+		return fmt.Errorf("uptoLine = %d is a negative number", uptoLine)
+	}
+
 	for i := 0; i <= uptoLine; /* since line is zero-based, upToLine is included */ i++ {
 		line, err := from.ReadBytes('\n')
 		if err == io.EOF {
-			to.WriteString(string(line))
-			break
+			if i == uptoLine {
+				to.WriteString(string(line))
+				break
+			} else {
+				return fmt.Errorf("trying to copy up to line = %d, but there are only %d lines", uptoLine, i)
+			}
 		} else if err != nil {
 			return err
 		}
@@ -170,32 +178,36 @@ func Insert(filename string, position Position, newText string) error {
 	var builder strings.Builder
 
 	// 2. Copy up to the prev line of position.Line
-	copyUpTo(bufReader, &builder, position.Line-1)
+	if err := copyUpTo(bufReader, &builder, position.Line-1); err != nil {
+		return err
+	}
 
 	// 3. Process the position.Line
 	// read the position.Line
-	line, isPrefix, err := bufReader.ReadLine()
+	line, err := bufReader.ReadBytes('\n')
+	if err == io.EOF {
+		// copy the position.Line up to the position.Character
+		updatedLine, err := insertInLine(position, newText, line)
+		if err != nil {
+			return err
+		}
+
+		_, err = builder.WriteString(updatedLine)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	// copy the position.Line up to the position.Character
+	updatedLine, err := insertInLine(position, newText, line)
 	if err != nil {
 		return err
 	}
-	if isPrefix {
-		return fmt.Errorf("line is too long! This function does not handle `isPrefix = true` returned by bufio.ReadLine()")
+
+	_, err = builder.WriteString(updatedLine)
+	if err != nil {
+		return err
 	}
-	// copy the position.Line up to the position.Character
-	bytesAt := 0
-	for j := 0; j <= position.Character; j++ {
-		r, size := utf8.DecodeRune(line[bytesAt:])
-		if size == 0 {
-			return fmt.Errorf("argument position.Character = %d, but it cannnot be greater than %d, the number of characters at line = %d", position.Character, j, position.Line)
-		}
-		builder.WriteRune(r)
-		bytesAt += size
-	}
-	// insert newText
-	builder.WriteString(newText)
-	// copy the rest of the line
-	builder.WriteString(string(line[bytesAt:]))
-	builder.WriteString("\n")
 
 	// 4. Copy the rest, until the end of file
 	for i := 0; i < position.Line; i++ {
