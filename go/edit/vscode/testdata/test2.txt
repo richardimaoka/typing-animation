@@ -1,0 +1,6 @@
+Hello this is a test file.
+There are multiple lines
+in this text file.
+And この文章のいくつかのpartは
+英語とJapaneseを混ぜて
+writtenされています。

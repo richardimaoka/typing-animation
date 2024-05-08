@@ -1,7 +1,11 @@
 package vscode
 
 import (
+	"bufio"
+	"strings"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestValidatePosition(t *testing.T) {
@@ -48,22 +52,94 @@ func TestLessThanOrEqualToPosition(t *testing.T) {
 	}
 }
 
-func TestValidateRange(t *testing.T) {
-	// cases := map[string]struct {
-	// 	success bool
-	// 	r       Range
-	// }{
-	// 	"negative pos": {true, Range{Position{Character: -1, Line: 10}, Position{Character: 1, Line: 10}}},
-	// }
+// from and to are zero-based line numbers
+func extractLines(multiLineString string, fromLine, toLine int) string {
+	split := strings.Split(multiLineString, "\n")
+	joined := strings.Join(split[fromLine:toLine+1], "\n") // by `[fromLine:toLine+1]` toLine is included, toLine+1 is excluded
 
-	// for name, c := range cases {
-	// 	t.Run(name, func(t *testing.T) {
-	// 		result := c.pos.Validate()
-	// 		if c.success != result {
-	// 			t.Errorf("%t expected but result = %t", c.success, result)
-	// 		}
-	// 	})
-	// }
+	if toLine < len(split) {
+		return joined + "\n"
+	} else {
+		return joined
+	}
+}
+
+func TestCopyUpTo(t *testing.T) {
+	original := `Hello this is a test file.
+There are multiple lines
+in this text file.
+And この文章のいくつかのpartは
+英語とJapaneseを混ぜて
+writtenされています。`
+
+	cases := map[string]struct {
+		original string
+		toLine   int
+		expected string
+	}{
+		"0": {
+			original,
+			0,
+			`Hello this is a test file.` + "\n",
+		},
+		"1": {
+			original,
+			1,
+			`Hello this is a test file.
+There are multiple lines` + "\n",
+		},
+		"2": {
+			original,
+			2,
+			`Hello this is a test file.
+There are multiple lines
+in this text file.` + "\n",
+		},
+		"3": {
+			original,
+			3,
+			`Hello this is a test file.
+There are multiple lines
+in this text file.
+And この文章のいくつかのpartは` + "\n",
+		},
+		"4": {
+			original,
+			4,
+			`Hello this is a test file.
+There are multiple lines
+in this text file.
+And この文章のいくつかのpartは
+英語とJapaneseを混ぜて` + "\n",
+		},
+		"5": {
+			original,
+			5,
+			`Hello this is a test file.
+There are multiple lines
+in this text file.
+And この文章のいくつかのpartは
+英語とJapaneseを混ぜて
+writtenされています。`,
+		},
+	}
+
+	for name, c := range cases {
+		t.Run(name, func(t *testing.T) {
+
+			var builder strings.Builder
+			bufReader := bufio.NewReader(strings.NewReader(c.original))
+			err := copyUpTo(bufReader, &builder, c.toLine)
+			if err != nil {
+				t.Errorf("error: %s", err)
+			}
+
+			result := builder.String()
+			if c.expected != result {
+				t.Errorf("%s", cmp.Diff(c.expected, result))
+			}
+		})
+	}
 }
 
 func TestSeek(t *testing.T) {

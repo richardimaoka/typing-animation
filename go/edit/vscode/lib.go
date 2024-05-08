@@ -44,7 +44,7 @@ func (p Position) LessThanOrEqualTo(target Position) bool {
 }
 
 func (r Range) Validate() bool {
-	return r.Start.Validate() && r.End.Validate()
+	return r.Start.Validate() && r.End.Validate() && r.Start.LessThanOrEqualTo(r.End)
 }
 
 func NewFileHandler(filename string) (*FileHandler, error) {
@@ -104,6 +104,28 @@ func (f *FileHandler) offset(position Position) (int, error) {
 
 	return totalBytes, nil
 }
+
+func copyUpTo(from *bufio.Reader, to *strings.Builder, uptoLine int) error {
+	for i := 0; i <= uptoLine; /* since line is zero-based, upToLine is included */ i++ {
+		line, err := from.ReadBytes('\n')
+		if err == io.EOF {
+			to.WriteString(string(line))
+			break
+		} else if err != nil {
+			return err
+		}
+		to.WriteString(string(line))
+	}
+	return nil
+}
+
+// func insertAtLine(from *bufio.Reader, to *strings.Builder, line, upToChar int) error {
+// 	return nil
+// }
+
+// func copyUntilEend(from *bufio.Reader, to *strings.Builder, uptoLine int) error {
+// 	return nil
+// }
 
 func Insert(filename string, position Position, newText string) error {
 	// 1. Validate arguments
