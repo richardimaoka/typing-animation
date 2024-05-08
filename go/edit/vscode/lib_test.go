@@ -137,7 +137,7 @@ func TestIinsertInLine(t *testing.T) {
 		expected string
 		err      error
 	}{
-		"0": {
+		"at the beginning": {
 			//              1         2
 			//    01234567890123456789012345
 			/**/ `Hello this is a test file.`,
@@ -146,13 +146,22 @@ func TestIinsertInLine(t *testing.T) {
 			`Good morning. Hello this is a test file.`,
 			nil,
 		},
-		"1": {
+		"in the middle, English": {
 			//              1         2
 			//    01234567890123456789012345
 			/**/ `Hello this is a test file.`,
 			Position{Line: 0, Character: 15},
 			"n amazing",
 			`Hello this is a` + "n amazing " + `test file.`,
+			nil,
+		},
+		"in the middle, Japanese": {
+			//                   1             2
+			//    01234 5 6 7 8 90 1 2 34567 89012345
+			/**/ `And この文章のいくつかのpartは`,
+			Position{Line: 0, Character: 9},
+			"中の",
+			`And この文章の中のいくつかのpartは`,
 			nil,
 		},
 	}
