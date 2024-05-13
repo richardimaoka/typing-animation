@@ -134,18 +134,20 @@ func (f *FileHandler) offset(position Position) (int, error) {
 	return totalBytes, nil
 }
 
-// `from` must be set to the initial position of the input, otherwise the behavior is not guaranteed.
-// If `uptoLine` is greater than the number of lines in from
-func copyUpTo(from *bufio.Reader, to *strings.Builder, uptoLine int) error {
+// Copy lines from fromReader up to uptoLine (zero-based), and copy the lines to toBuilder.
+// from must be set to the initial position of the input, otherwise the behavior is not guaranteed.
+// uptoLine must be zero or a positive number.
+// If `uptoLine` is greater than the number of lines in fromReader, then error.
+func copyUpTo(fromReader *bufio.Reader, toBuilder *strings.Builder, uptoLine int) error {
 	if uptoLine < 0 {
 		return fmt.Errorf("uptoLine = %d is a negative number", uptoLine)
 	}
 
-	for i := 0; i <= uptoLine; /* since line is zero-based, upToLine is included */ i++ {
-		line, err := from.ReadBytes('\n')
+	for i := 0; i <= uptoLine; /* since uptoLine is zero-based, upToLine is included */ i++ {
+		line, err := fromReader.ReadBytes('\n')
 		if err == io.EOF {
 			if i == uptoLine {
-				to.WriteString(string(line))
+				toBuilder.WriteString(string(line))
 				break
 			} else {
 				return fmt.Errorf("trying to copy up to line = %d, but there are only %d lines", uptoLine, i)
@@ -153,21 +155,23 @@ func copyUpTo(from *bufio.Reader, to *strings.Builder, uptoLine int) error {
 		} else if err != nil {
 			return err
 		}
-		to.WriteString(string(line))
+		toBuilder.WriteString(string(line))
 	}
 	return nil
 }
 
-func insertInLine(pos Position, newText string, line []byte) (string, error) {
+// Insert newText at chartAt on the line.
+// If charAt is greater than the end of line, error is returned, otherwise, no error.
+func insertInLine(charAt int, newText string, line []byte) (string, error) {
 	var builder strings.Builder
 
 	// copy the position.Line up to the position.Character
 	byteOffset := 0
-	for i := 0; i < pos.Character; i++ {
+	for i := 0; i < charAt; i++ {
 		r, size := utf8.DecodeRune(line[byteOffset:])
 		if r == utf8.RuneError {
 			if size == 0 {
-				return "", fmt.Errorf("trying to insert '%s' at char = %d, line = %d, but there is only %d chars on the line", newText, pos.Character, pos.Character, i)
+				return "", fmt.Errorf("trying to insert '%s' at char = %d, but there are only %d chars on the line", newText, charAt, i)
 			}
 		}
 
@@ -184,30 +188,31 @@ func insertInLine(pos Position, newText string, line []byte) (string, error) {
 	return builder.String(), nil
 }
 
-func processLine(from *bufio.Reader, to *strings.Builder, pos Position, newText string) error {
-	line, err := from.ReadBytes('\n')
+// Take the current line from fromReader, and insert newText to the line, then copy the updated line to toBuilder.
+// It doesn't matter whether the line ends in '\n' or EOF
+func processLine(fromReader *bufio.Reader, toBuilder *strings.Builder, pos Position, newText string) error {
+	if err := pos.Validate(); err != nil {
+		return fmt.Errorf("processing line = %d failed, %s", pos.Line, err)
+	}
+
+	// Firstly, read the line to process
+	line, err := fromReader.ReadBytes('\n')
 	if err == io.EOF {
-		// copy the position.Line up to the position.Character
-		updatedLine, err := insertInLine(pos, newText, line)
-		if err != nil {
-			return err
-		}
-
-		_, err = to.WriteString(updatedLine)
-		if err != nil {
-			return err
-		}
-		return nil
-	}
-	// copy the position.Line up to the position.Character
-	updatedLine, err := insertInLine(pos, newText, line)
-	if err != nil {
-		return err
+		// Ignore EOF and continue - it doesn't matter whether the line ends in '\n' or EOF
+	} else if err != nil {
+		return fmt.Errorf("processing line = %d failed, %s", pos.Line, err)
 	}
 
-	_, err = to.WriteString(updatedLine)
+	// Secondly, write the udpted line
+	//   Update line and assign it to a temp variable, updatedLine
+	updatedLine, err := insertInLine(pos.Character, newText, line)
 	if err != nil {
-		return err
+		return fmt.Errorf("processing line = %d failed, %s", pos.Line, err)
+	}
+	//   Copy totoBuilder from updatedLine
+	_, err = toBuilder.WriteString(updatedLine)
+	if err != nil {
+		return fmt.Errorf("processing line = %d failed, %s", pos.Line, err)
 	}
 
 	return nil
@@ -226,65 +231,39 @@ func Insert(filename string, position Position, newText string) error {
 	// 2. Open file
 	f, err := os.OpenFile(filename, syscall.O_RDWR, 0666)
 	if err != nil {
-		return err
+		return fmt.Errorf("Insert() error, %s", err)
 	}
 	defer f.Close()
 
 	fromReader := bufio.NewReader(f)
 	var toBuilder strings.Builder
 
-	// 2. Copy up to the prev line of position.Line
+	// 2. Copy up to position.Line-1
 	if err := copyUpTo(fromReader, &toBuilder, position.Line-1); err != nil {
-		return err
+		return fmt.Errorf("Insert() error, %s", err)
 	}
 
 	// 3. Process the position.Line
 	// read the position.Line
-	line, err := fromReader.ReadBytes('\n')
-	if err == io.EOF {
-		// copy the position.Line up to the position.Character
-		updatedLine, err := insertInLine(position, newText, line)
-		if err != nil {
-			return err
-		}
-
-		_, err = toBuilder.WriteString(updatedLine)
-		if err != nil {
-			return err
-		}
-		return nil
-	}
-	// copy the position.Line up to the position.Character
-	updatedLine, err := insertInLine(position, newText, line)
-	if err != nil {
-		return err
+	if err := processLine(fromReader, &toBuilder, position, newText); err != nil {
+		return fmt.Errorf("Insert() error, %s", err)
 	}
 
-	_, err = toBuilder.WriteString(updatedLine)
-	if err != nil {
-		return err
-	}
-
-	// 4. Copy the rest, until the end of file
-	for i := 0; i < position.Line; i++ {
-		line, isPrefix, err := fromReader.ReadLine()
+	// 4. Copy the rest (from position.Line+1), until the end of file
+	for {
+		line, err := fromReader.ReadBytes('\n')
 		if err == io.EOF {
+			if len(line) != 0 {
+				toBuilder.WriteString(string(line))
+			}
 			break
 		} else if err != nil {
-			return err
+			return fmt.Errorf("Insert() error, %s", err)
 		}
-		if isPrefix {
-			return fmt.Errorf(":ine is too long! This function does not handle `isPrefix = true` returned by bufio.ReadLine()")
-		}
-		if len(line) == 0 {
-			break
-		}
-		toBuilder.WriteString(string(line))
-		toBuilder.WriteString("\n")
-	}
 
-	// 5. Write back to the file
-	f.WriteAt([]byte(toBuilder.String()), 0)
+		// not io.EOF yet
+		toBuilder.WriteString(string(line))
+	}
 
 	return nil
 }

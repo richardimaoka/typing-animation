@@ -186,11 +186,38 @@ func TestIinsertInLine(t *testing.T) {
 			`And この文章の中のいくつかのpartは`,
 			nil,
 		},
+		"at the beginning, end in newline": {
+			//              1         2
+			//    01234567890123456789012345
+			/**/ `Hello this is a test file.\n`,
+			Position{Line: 0, Character: 0},
+			"Good morning. ",
+			`Good morning. Hello this is a test file.\n`,
+			nil,
+		},
+		"in the middle, English, end in newline": {
+			//              1         2
+			//    01234567890123456789012345
+			/**/ `Hello this is a test file.\n`,
+			Position{Line: 0, Character: 15},
+			"n amazing",
+			`Hello this is a` + "n amazing " + `test file.\n`,
+			nil,
+		},
+		"in the middle, Japanese, end in newline": {
+			//                   1             2
+			//    01234 5 6 7 8 90 1 2 34567 89012345
+			/**/ `And この文章のいくつかのpartは\n`,
+			Position{Line: 0, Character: 9},
+			"中の",
+			`And この文章の中のいくつかのpartは\n`,
+			nil,
+		},
 	}
 
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
-			result, err := insertInLine(c.pos, c.newText, []byte(c.original))
+			result, err := insertInLine(c.pos.Character, c.newText, []byte(c.original))
 			if err != nil {
 				if c.err == nil {
 					t.Fatalf("error: %s", err)
@@ -198,6 +225,99 @@ func TestIinsertInLine(t *testing.T) {
 				return // expected error
 			}
 
+			if c.expected != result {
+				t.Errorf("%s", cmp.Diff(c.expected, result))
+			}
+		})
+	}
+}
+
+func TestProcessLine(t *testing.T) {
+
+	cases := map[string]struct {
+		original string
+		pos      Position
+		newText  string
+		expected string
+		err      bool
+	}{
+		"Up to the 1st line with line zero": {
+			`Hello this is a test file.`,
+			Position{-1, 0},
+			"aaa",
+			"",
+			true,
+		},
+		"at the beginning": {
+			//              1         2
+			//    01234567890123456789012345
+			/**/ `Hello this is a test file.`,
+			Position{Line: 0, Character: 0},
+			"Good morning. ",
+			`Good morning. Hello this is a test file.`,
+			false,
+		},
+		"in the middle, English": {
+			//              1         2
+			//    01234567890123456789012345
+			/**/ `Hello this is a test file.`,
+			Position{Line: 0, Character: 15},
+			"n amazing",
+			`Hello this is a` + "n amazing " + `test file.`,
+			false,
+		},
+		"in the middle, Japanese": {
+			//                   1             2
+			//    01234 5 6 7 8 90 1 2 34567 89012345
+			/**/ `And この文章のいくつかのpartは`,
+			Position{Line: 0, Character: 9},
+			"中の",
+			`And この文章の中のいくつかのpartは`,
+			false,
+		},
+		"at the beginning, end in newline": {
+			//              1         2
+			//    01234567890123456789012345
+			/**/ `Hello this is a test file.\n`,
+			Position{Line: 0, Character: 0},
+			"Good morning. ",
+			`Good morning. Hello this is a test file.\n`,
+			false,
+		},
+		"in the middle, English, end in newline": {
+			//              1         2
+			//    01234567890123456789012345
+			/**/ `Hello this is a test file.\n`,
+			Position{Line: 0, Character: 15},
+			"n amazing",
+			`Hello this is a` + "n amazing " + `test file.\n`,
+			false,
+		},
+		"in the middle, Japanese, end in newline": {
+			//                   1             2
+			//    01234 5 6 7 8 90 1 2 34567 89012345
+			/**/ `And この文章のいくつかのpartは\n`,
+			Position{Line: 0, Character: 9},
+			"中の",
+			`And この文章の中のいくつかのpartは\n`,
+			false,
+		},
+	}
+
+	for name, c := range cases {
+		t.Run(name, func(t *testing.T) {
+			var builder strings.Builder
+			bufReader := bufio.NewReader(strings.NewReader(c.original))
+
+			err := processLine(bufReader, &builder, c.pos, c.newText)
+			if err != nil {
+				if c.err {
+					return // expected error
+				}
+				t.Fatalf("unexpected error: %s", err)
+			}
+
+			result := builder.String()
 			if c.expected != result {
 				t.Errorf("%s", cmp.Diff(c.expected, result))
 			}
