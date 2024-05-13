@@ -2,7 +2,6 @@ package vscode
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -10,75 +9,6 @@ import (
 	"syscall"
 	"unicode/utf8"
 )
-
-// Same as VS Code extention API's Position
-// https://code.visualstudio.com/api/references/vscode-api#Position
-type Position struct {
-	Line      int //The zero-based line value.
-	Character int //The zero-based character value.
-}
-
-type Range struct {
-	Start Position
-	End   Position
-}
-
-type FileHandler struct {
-	file *os.File
-}
-
-func (p Position) Validate() error {
-	errors := []string{}
-
-	// Both Line and Character is zero-based
-	if p.Character < 0 {
-		errors = append(errors, fmt.Sprintf("negative character = %d", p.Character))
-	}
-
-	if p.Line < 0 {
-		errors = append(errors, fmt.Sprintf("negative line = %d", p.Line))
-	}
-
-	if len(errors) > 0 {
-		return fmt.Errorf("invalid position, %s", strings.Join(errors, ", "))
-	}
-
-	return nil
-}
-
-func (p Position) LessThanOrEqualTo(target Position) bool {
-	if p.Line < target.Line {
-		return true
-	} else if p.Line == target.Line {
-		return p.Character <= target.Character
-	} else {
-		// p.Line > target.Line
-		return false
-	}
-}
-
-func (r Range) Validate() error {
-	errs := []string{}
-
-	// Both Line and Character is zero-based
-	if err := r.Start.Validate(); err != nil {
-		errs = append(errs, fmt.Sprintf("range start error, %s", err))
-	}
-
-	if err := r.End.Validate(); err != nil {
-		errs = append(errs, fmt.Sprintf("range end error, %s", err))
-	}
-
-	if len(errs) > 0 {
-		return errors.New(strings.Join(errs, ", "))
-	}
-
-	if !r.Start.LessThanOrEqualTo(r.End) {
-		return fmt.Errorf("invalid range, start %+v > end %+v", r.Start, r.End)
-	}
-
-	return nil
-}
 
 // Copy lines from fromReader up to uptoLine (zero-based), and copy the lines to toBuilder.
 // from must be set to the initial position of the input, otherwise the behavior is not guaranteed.
