@@ -14,7 +14,7 @@ import (
 // from must be set to the initial position of the input, otherwise the behavior is not guaranteed.
 // uptoLine must be zero or a positive number.
 // If `uptoLine` is greater than the number of lines in fromReader, then error.
-func copyUpTo(fromReader *bufio.Reader, toBuilder *strings.Builder, uptoLine int) error {
+func copyUpToLine(fromReader *bufio.Reader, toBuilder *strings.Builder, uptoLine int) error {
 	if uptoLine < 0 {
 		return fmt.Errorf("uptoLine = %d is a negative number", uptoLine)
 	}
@@ -117,6 +117,45 @@ func copyUntilEOF(fromReader *bufio.Reader, toBuilder *strings.Builder) error {
 	return nil
 }
 
+func writeFromBeginning(file *os.File, text string) error {
+	n, err := file.WriteAt([]byte(text), 0)
+	if n == 0 {
+		return fmt.Errorf("no byte is written to file")
+	}
+
+	// return err on error, nil on success
+	return err
+}
+
+func insertInternal(rwFile *os.File, position Position, newText string) error {
+	fromReader := bufio.NewReader(rwFile)
+	var toBuilder strings.Builder
+
+	// 1. Copy up to position.Line-1
+	if position.Line > 0 {
+		if err := copyUpToLine(fromReader, &toBuilder, position.Line-1); err != nil {
+			return err
+		}
+	}
+
+	// 2. Process the position.Line
+	if err := processLine(fromReader, &toBuilder, position, newText); err != nil {
+		return err
+	}
+
+	// 3. Copy the rest, until the end of file
+	if err := copyUntilEOF(fromReader, &toBuilder); err != nil {
+		return err
+	}
+
+	// 4. Write to file
+	if err := writeFromBeginning(rwFile, toBuilder.String()); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func Insert(filename string, position Position, newText string) error {
 	// 1. Validate arguments
 	if err := position.Validate(); err != nil {
@@ -124,32 +163,17 @@ func Insert(filename string, position Position, newText string) error {
 	}
 
 	// 2. Open file
-	f, err := os.OpenFile(filename, syscall.O_RDWR, 0666)
+	file, err := os.OpenFile(filename, syscall.O_RDWR, 0666)
 	if err != nil {
 		return fmt.Errorf("Insert() error, %s", err)
 	}
-	defer f.Close()
+	defer file.Close()
 
-	fromReader := bufio.NewReader(f)
-	var toBuilder strings.Builder
-
-	// 2. Copy up to position.Line-1
-	if err := copyUpTo(fromReader, &toBuilder, position.Line-1); err != nil {
+	// 3. Internal logic
+	if err := insertInternal(file, position, newText); err != nil {
 		return fmt.Errorf("Insert() error, %s", err)
 	}
 
-	// 3. Process the position.Line
-	// read the position.Line
-	if err := processLine(fromReader, &toBuilder, position, newText); err != nil {
-		return fmt.Errorf("Insert() error, %s", err)
-	}
-
-	// 4. Copy the rest (from position.Line+1), until the end of file
-	if err := copyUntilEOF(fromReader, &toBuilder); err != nil {
-		return fmt.Errorf("Insert() error, %s", err)
-	}
-
-	// 5. Successful !!
 	return nil
 }
 
