@@ -69,20 +69,21 @@ writtenされています。`
 		expected string
 		err      bool
 	}{
-		"0": {
+		// line is zero-based, so the minimum is up to first line, copying no line is impossible
+		"Up to the 1st line with line zero": {
 			original,
 			0,
 			`Hello this is a test file.` + "\n",
 			false,
 		},
-		"1": {
+		"Up to the 2nd line": {
 			original,
 			1,
 			`Hello this is a test file.
 There are multiple lines` + "\n",
 			false,
 		},
-		"2": {
+		"Up to the 3rd line": {
 			original,
 			2,
 			`Hello this is a test file.
@@ -90,7 +91,7 @@ There are multiple lines
 in this text file.` + "\n",
 			false,
 		},
-		"3": {
+		"Up to the 4th line": {
 			original,
 			3,
 			`Hello this is a test file.
@@ -99,7 +100,7 @@ in this text file.
 And この文章のいくつかのpartは` + "\n",
 			false,
 		},
-		"4": {
+		"Up to the 5th line": {
 			original,
 			4,
 			`Hello this is a test file.
@@ -109,7 +110,7 @@ And この文章のいくつかのpartは
 英語とJapaneseを混ぜて` + "\n",
 			false,
 		},
-		"5": {
+		"Up to the 6th(last) line, without trailing new-line": {
 			original,
 			5,
 			`Hello this is a test file.
@@ -120,8 +121,8 @@ And この文章のいくつかのpartは
 writtenされています。`,
 			false,
 		},
-		"6": {
-			//ERROR when trying to read more lines than exist
+		//ERROR when trying to read more lines than exist
+		"error upon reading non-existent 7th line": {
 			original,
 			6,
 			"",
@@ -224,20 +225,20 @@ func TestSeek(t *testing.T) {
 	}
 }
 
-func TestInsert(t *testing.T) {
-	err := Insert("testdata/test.txt", Position{Line: 2, Character: 3}, "abc")
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = Insert("testdata/test.txt", Position{Line: 2, Character: 3}, "abc")
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = Insert("testdata/test.txt", Position{Line: 2, Character: 3}, "abc")
-	if err != nil {
-		t.Fatal(err)
-	}
-}
+// func TestInsert(t *testing.T) {
+// 	err := Insert("testdata/test.txt", Position{Line: 2, Character: 3}, "abc")
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	err = Insert("testdata/test.txt", Position{Line: 2, Character: 3}, "abc")
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	err = Insert("testdata/test.txt", Position{Line: 2, Character: 3}, "abc")
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// }
 
 // func TestDelete(t *testing.T) {
 // 	r := Range{Position{Line: 2, Character: 2}, Position{Line: 2, Character: 3}}

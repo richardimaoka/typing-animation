@@ -92,12 +92,8 @@ func NewFileHandler(filename string) (*FileHandler, error) {
 }
 
 func (f *FileHandler) offset(position Position) (int, error) {
-	if position.Line < 0 {
-		return 0, fmt.Errorf("argument position.Line = %d, but it cannnot be a negative number", position.Line)
-	}
-
-	if position.Character < 0 {
-		return 0, fmt.Errorf("argument position.Character = %d, but it cannnot be a negative number", position.Character)
+	if err := position.Validate(); err != nil {
+		return 0, fmt.Errorf("offset() error, %s", err)
 	}
 
 	r := bufio.NewReader(f.file)
@@ -138,6 +134,8 @@ func (f *FileHandler) offset(position Position) (int, error) {
 	return totalBytes, nil
 }
 
+// `from` must be set to the initial position of the input, otherwise the behavior is not guaranteed.
+// If `uptoLine` is greater than the number of lines in from
 func copyUpTo(from *bufio.Reader, to *strings.Builder, uptoLine int) error {
 	if uptoLine < 0 {
 		return fmt.Errorf("uptoLine = %d is a negative number", uptoLine)
@@ -186,18 +184,43 @@ func insertInLine(pos Position, newText string, line []byte) (string, error) {
 	return builder.String(), nil
 }
 
+func processLine(from *bufio.Reader, to *strings.Builder, pos Position, newText string) error {
+	line, err := from.ReadBytes('\n')
+	if err == io.EOF {
+		// copy the position.Line up to the position.Character
+		updatedLine, err := insertInLine(pos, newText, line)
+		if err != nil {
+			return err
+		}
+
+		_, err = to.WriteString(updatedLine)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	// copy the position.Line up to the position.Character
+	updatedLine, err := insertInLine(pos, newText, line)
+	if err != nil {
+		return err
+	}
+
+	_, err = to.WriteString(updatedLine)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // func copyUntilEend(from *bufio.Reader, to *strings.Builder, uptoLine int) error {
 // 	return nil
 // }
 
 func Insert(filename string, position Position, newText string) error {
 	// 1. Validate arguments
-	if position.Line < 0 {
-		return fmt.Errorf("argument position.Line = %d, but it cannnot be a negative number", position.Line)
-	}
-
-	if position.Character < 0 {
-		return fmt.Errorf("argument position.Character = %d, but it cannnot be a negative number", position.Character)
+	if err := position.Validate(); err != nil {
+		return fmt.Errorf("Insert() error, %s", err)
 	}
 
 	// 2. Open file
@@ -207,17 +230,17 @@ func Insert(filename string, position Position, newText string) error {
 	}
 	defer f.Close()
 
-	bufReader := bufio.NewReader(f)
-	var builder strings.Builder
+	fromReader := bufio.NewReader(f)
+	var toBuilder strings.Builder
 
 	// 2. Copy up to the prev line of position.Line
-	if err := copyUpTo(bufReader, &builder, position.Line-1); err != nil {
+	if err := copyUpTo(fromReader, &toBuilder, position.Line-1); err != nil {
 		return err
 	}
 
 	// 3. Process the position.Line
 	// read the position.Line
-	line, err := bufReader.ReadBytes('\n')
+	line, err := fromReader.ReadBytes('\n')
 	if err == io.EOF {
 		// copy the position.Line up to the position.Character
 		updatedLine, err := insertInLine(position, newText, line)
@@ -225,7 +248,7 @@ func Insert(filename string, position Position, newText string) error {
 			return err
 		}
 
-		_, err = builder.WriteString(updatedLine)
+		_, err = toBuilder.WriteString(updatedLine)
 		if err != nil {
 			return err
 		}
@@ -237,14 +260,14 @@ func Insert(filename string, position Position, newText string) error {
 		return err
 	}
 
-	_, err = builder.WriteString(updatedLine)
+	_, err = toBuilder.WriteString(updatedLine)
 	if err != nil {
 		return err
 	}
 
 	// 4. Copy the rest, until the end of file
 	for i := 0; i < position.Line; i++ {
-		line, isPrefix, err := bufReader.ReadLine()
+		line, isPrefix, err := fromReader.ReadLine()
 		if err == io.EOF {
 			break
 		} else if err != nil {
@@ -256,12 +279,12 @@ func Insert(filename string, position Position, newText string) error {
 		if len(line) == 0 {
 			break
 		}
-		builder.WriteString(string(line))
-		builder.WriteString("\n")
+		toBuilder.WriteString(string(line))
+		toBuilder.WriteString("\n")
 	}
 
 	// 5. Write back to the file
-	f.WriteAt([]byte(builder.String()), 0)
+	f.WriteAt([]byte(toBuilder.String()), 0)
 
 	return nil
 }
