@@ -218,9 +218,28 @@ func processLine(fromReader *bufio.Reader, toBuilder *strings.Builder, pos Posit
 	return nil
 }
 
-// func copyUntilEend(from *bufio.Reader, to *strings.Builder, uptoLine int) error {
-// 	return nil
-// }
+// Read all the remaining lines from fromReader, then copy them to toBuilder
+func copyUntilEOF(fromReader *bufio.Reader, toBuilder *strings.Builder) error {
+	for {
+		line, err := fromReader.ReadBytes('\n')
+		if err == io.EOF {
+			if len(line) != 0 {
+				// If EOF, and line has something to copy
+				toBuilder.WriteString(string(line))
+			}
+			// break out of the loop, as EOF
+			break
+		} else if err != nil {
+			// For other errors, return error
+			return fmt.Errorf("Insert() error, %s", err)
+		}
+
+		// not io.EOF yet, keep looping
+		toBuilder.WriteString(string(line))
+	}
+
+	return nil
+}
 
 func Insert(filename string, position Position, newText string) error {
 	// 1. Validate arguments
@@ -250,21 +269,11 @@ func Insert(filename string, position Position, newText string) error {
 	}
 
 	// 4. Copy the rest (from position.Line+1), until the end of file
-	for {
-		line, err := fromReader.ReadBytes('\n')
-		if err == io.EOF {
-			if len(line) != 0 {
-				toBuilder.WriteString(string(line))
-			}
-			break
-		} else if err != nil {
-			return fmt.Errorf("Insert() error, %s", err)
-		}
-
-		// not io.EOF yet
-		toBuilder.WriteString(string(line))
+	if err := copyUntilEOF(fromReader, &toBuilder); err != nil {
+		return fmt.Errorf("Insert() error, %s", err)
 	}
 
+	// 5. Successful !!
 	return nil
 }
 

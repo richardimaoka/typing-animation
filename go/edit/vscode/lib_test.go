@@ -325,6 +325,60 @@ func TestProcessLine(t *testing.T) {
 	}
 }
 
+func TestCopyUntilEOF(t *testing.T) {
+	cases := map[string]struct {
+		original string
+		err      bool
+	}{
+		"empty": {
+			``,
+			false,
+		},
+		"only newline": {
+			"\n",
+			false,
+		},
+		"one line": {
+			`Hello this is a test file.`,
+			false,
+		},
+		"one line, endling in newline": {
+			`Hello this is a test file.` + "\n",
+			false,
+		},
+		"two lines": {
+			`Hello this is a test file.
+Good morning`,
+			false,
+		},
+		"two lines ending in newline": {
+			`Hello this is a test file.
+Good morning` + "\n",
+			false,
+		},
+	}
+
+	for name, c := range cases {
+		t.Run(name, func(t *testing.T) {
+			var builder strings.Builder
+			bufReader := bufio.NewReader(strings.NewReader(c.original))
+
+			err := copyUntilEOF(bufReader, &builder)
+			if err != nil {
+				if c.err {
+					return // expected error
+				}
+				t.Fatalf("unexpected error: %s", err)
+			}
+
+			result := builder.String()
+			if c.original != result {
+				t.Errorf("%s", cmp.Diff(c.original, result))
+			}
+		})
+	}
+}
+
 func TestSeek(t *testing.T) {
 	h, err := NewFileHandler("testdata/test.txt")
 	if err != nil {
