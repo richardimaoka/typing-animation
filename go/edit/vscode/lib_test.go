@@ -15,10 +15,10 @@ func TestInsert(t *testing.T) {
 		pos          vscode.Position
 		newText      string
 	}{
-		"digits file 1": {"testdata/test_digits1.txt", vscode.Position{Line: 2, Character: 3}, "abc"},
-		"digits file 2": {"testdata/test_digits2.txt", vscode.Position{Line: 0, Character: 0}, "aaaa"},
-		"Japanese file": {"testdata/test_Japanese.txt", vscode.Position{Line: 3, Character: 6}, "すばらしい"}, // And この文章のいくつかのpartは(char = 6 is「の」)
-		// "Japanese file n": {"testdata/test_Japanese_n.txt", vscode.Position{Line: 3, Character: 3}, "abc"},
+		"digits file 1": {"testdata/insert/digits1.txt", vscode.Position{Line: 2, Character: 3}, "abc"},
+		"digits file 2": {"testdata/insert/digits2.txt", vscode.Position{Line: 0, Character: 0}, "aaaa"},
+		"Japanese file": {"testdata/insert/Japanese.txt", vscode.Position{Line: 3, Character: 6}, "すばらしい"}, // And この文章のいくつかのpartは(char = 6 is「の」)
+		// "Japanese file n": {"testdata/inert/Japanese_n.txt", vscode.Position{Line: 3, Character: 3}, "abc"},
 	}
 
 	for name, c := range cases {
@@ -70,7 +70,7 @@ func TestInsert(t *testing.T) {
 
 // func TestDelete(t *testing.T) {
 // 	r := Range{Position{Line: 2, Character: 2}, Position{Line: 2, Character: 3}}
-// 	err := Delete("testdata/test_delete.txt", r)
+// 	err := Delete("testdata/inert/delete.txt", r)
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}
