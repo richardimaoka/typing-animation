@@ -15,9 +15,12 @@ func TestInsert(t *testing.T) {
 		pos          vscode.Position
 		newText      string
 	}{
-		"digits file 1": {"testdata/insert/digits1.txt", vscode.Position{Line: 2, Character: 3}, "abc"},
-		"digits file 2": {"testdata/insert/digits2.txt", vscode.Position{Line: 0, Character: 0}, "aaaa"},
-		"Japanese file": {"testdata/insert/Japanese.txt", vscode.Position{Line: 3, Character: 6}, "すばらしい"}, // And この文章のいくつかのpartは(char = 6 is「の」)
+		"beginning":                {"testdata/insert/digits1.txt", vscode.Position{Line: 2, Character: 3}, "abc"},
+		"in the middle":            {"testdata/insert/digits2.txt", vscode.Position{Line: 0, Character: 0}, "aaaa"},
+		"in the middle Japanese":   {"testdata/insert/Japanese.txt", vscode.Position{Line: 3, Character: 6}, "すばらしい"}, // And この文章のいくつかのpartは(char = 6 is「の」)
+		"in the middle, multiline": {"testdata/insert/digits2.txt", vscode.Position{Line: 0, Character: 0}, "aaaa"},
+		"at the end":               {"testdata/insert/digits2.txt", vscode.Position{Line: 0, Character: 0}, "aaaa"},
+		"at the end, newline":      {"testdata/insert/digits2.txt", vscode.Position{Line: 0, Character: 0}, "aaaa"},
 		// "Japanese file n": {"testdata/inert/Japanese_n.txt", vscode.Position{Line: 3, Character: 3}, "abc"},
 	}
 
