@@ -87,10 +87,71 @@ func TestInsert(t *testing.T) {
 	}
 }
 
-// func TestDelete(t *testing.T) {
-// 	r := Range{Position{Line: 2, Character: 2}, Position{Line: 2, Character: 3}}
-// 	err := Delete("testdata/inert/delete.txt", r)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// }
+func TestDelete(t *testing.T) {
+	cases := map[string]struct {
+		originalFile string
+		pos          vscode.Position
+		newText      string
+		err          bool
+	}{
+		// invalid range
+		// beginning
+		// at the end
+		// multi-line delete
+		// error delete after end
+
+	}
+
+	for name, c := range cases {
+		t.Run(name, func(t *testing.T) {
+			// 1. Preparation
+			//    Read input file
+			expectedContents, err := os.ReadFile(c.originalFile)
+			if err != nil {
+				t.Fatal(err)
+			}
+			// Copy to temp file
+			tempFile := strings.Replace(c.originalFile, ".txt", "_temp.txt", 1)
+			err = os.WriteFile(tempFile, expectedContents, 0666)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer func() {
+				err = os.Remove(tempFile)
+				if err != nil {
+					t.Fatal(err)
+				}
+			}()
+
+			// 2. Target operation
+			//    Insert to temp file
+			err = vscode.Insert(tempFile, c.pos, c.newText)
+			if err != nil {
+				if c.err {
+					return // expected error
+				}
+				t.Fatal(err)
+			}
+			if c.err {
+				t.Fatal("expected error but succeeded")
+			}
+
+			// 3. Check results
+			//    Read from temp file
+			resultedContents, err := os.ReadFile(tempFile)
+			if err != nil {
+				t.Fatal(err)
+			}
+			// Read from golden file
+			goldenFile := strings.Replace(c.originalFile, ".txt", "_golden.txt", 1)
+			expectedContents, err = os.ReadFile(goldenFile)
+			if err != nil {
+				t.Fatal(err)
+			}
+			// Comparison
+			if string(expectedContents) != string(resultedContents) {
+				t.Errorf("%s", cmp.Diff(string(expectedContents), string(resultedContents)))
+			}
+		})
+	}
+}
