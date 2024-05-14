@@ -37,7 +37,10 @@ func copyUpToLine(fromReader *bufio.Reader, toBuilder *strings.Builder, uptoLine
 	return nil
 }
 
-func firstRune(line []byte, byteOffset int) (rune, int, error) {
+// Reading the first run with offset byteOffset.
+// This function expects a non-ending rune.
+// So, it returns error if the rune is new-line, reached the end of line, or encountered rune erorr.
+func firstNonEndingRune(line []byte, byteOffset int) (rune, int, error) {
 	r, size := utf8.DecodeRune(line[byteOffset:])
 	if r == '\n' {
 		return r, 0, errors.New("encountered new-line")
@@ -59,44 +62,13 @@ func readUptoPrevChar(line []byte, charAt int) (string, error) {
 	// copy line up to 1 char before charAt
 	byteOffset := 0
 	for i := 0; i < charAt; i++ {
-		r, size := utf8.DecodeRune(line[byteOffset:])
-		if r == '\n' {
-			return "", fmt.Errorf("trying to read up 1-char before char = %d, but encountered new-line at chart = %d", charAt, i)
+		r, size, err := firstNonEndingRune(line, byteOffset)
+		if err != nil {
+			return "", fmt.Errorf("trying to read up to 1-char before char = %d, failed at char = %d, %s", charAt, i, err)
 		}
-		if r == utf8.RuneError {
-			if size == 0 {
-				return "", fmt.Errorf("trying to read up to 1-char before char = %d, but reached the end of line at char = %d", charAt, i)
-			} else {
-				return "", fmt.Errorf("trying to read up to 1-char before char = %d, but encountered decoding error at char =  %d", charAt, i)
-			}
+		if _, err := builder.WriteRune(r); err != nil {
+			return "", fmt.Errorf("trying to read up to 1-char before char = %d, failed at char = %d, %s", charAt, i, err)
 		}
-
-		builder.WriteRune(r)
-		byteOffset += size
-	}
-
-	return builder.String(), nil
-}
-
-func readLineUpto(line []byte, upToChar int) (string, error) {
-	var builder strings.Builder
-
-	// copy line up to upToChar
-	byteOffset := 0
-	for i := 0; i <= upToChar; i++ {
-		r, size := utf8.DecodeRune(line[byteOffset:])
-		if r == '\n' {
-			return "", fmt.Errorf("trying to read up to char = %d, but encountered new-line at chart = %d", upToChar, i)
-		}
-		if r == utf8.RuneError {
-			if size == 0 {
-				return "", fmt.Errorf("trying to read up to char = %d, but reached the end of line at char = %d", upToChar, i)
-			} else {
-				return "", fmt.Errorf("trying to read up to char = %d, but encountered decoding error at char =  %d", upToChar, i)
-			}
-		}
-
-		builder.WriteRune(r)
 		byteOffset += size
 	}
 
@@ -109,7 +81,7 @@ func readLineSkipMiddle(line []byte, skipStartChar, skipEndChar int) (string, er
 	// copy line up to 1 char before skipStartChar
 	byteOffset := 0
 	for i := 0; i < skipStartChar; i++ {
-		r, size, err := firstRune(line, byteOffset)
+		r, size, err := firstNonEndingRune(line, byteOffset)
 		if err != nil {
 			return "", fmt.Errorf("trying to read up to char = %d, failed at char = %d, %s", skipStartChar, i, err)
 		}
@@ -121,7 +93,7 @@ func readLineSkipMiddle(line []byte, skipStartChar, skipEndChar int) (string, er
 
 	// skip from skipStartChar to skipEndChar - 1
 	for i := skipStartChar; i < skipEndChar; i++ {
-		_, size, err := firstRune(line, byteOffset)
+		_, size, err := firstNonEndingRune(line, byteOffset)
 		if err != nil {
 			return "", fmt.Errorf("trying to read up to char = %d, failed at char = %d, %s", skipStartChar, i, err)
 		}
@@ -139,29 +111,20 @@ func readLineSkipMiddle(line []byte, skipStartChar, skipEndChar int) (string, er
 
 // Insert newText at chartAt on the line.
 // If line has '\n', '\n' must be at the end of line, otherwise, behavior is not guaranteed
-// If charAt is greater than the end of line, error is returned, otherwise, no error.
+// If charAt is greater than the end of line, error is returned
 func insertInLine(charAt int, newText string, line []byte) (string, error) {
 	var builder strings.Builder
 
-	// copy the position.Line up to the position.Character
+	// copy the line up to 1-char before charAt
 	byteOffset := 0
 	for i := 0; i < charAt; i++ {
-		r, size := utf8.DecodeRune(line[byteOffset:])
-		if r == '\n' {
-			return "", fmt.Errorf("trying to insert '%s' at char = %d, but encountered new-line at chart = %d", newText, charAt, i)
+		r, size, err := firstNonEndingRune(line, byteOffset)
+		if err != nil {
+			return "", fmt.Errorf("trying to insert '%s' at char = %d, but failed at char = %d, %s", newText, charAt, i, err)
 		}
-		if r == utf8.RuneError {
-			if size == 0 {
-				return "", fmt.Errorf("trying to insert '%s' at char = %d, but reached the end of line at char = %d", newText, charAt, i)
-			} else {
-				return "", fmt.Errorf("trying to insert '%s' at char = %d, but encountered decoding error at char =  %d", newText, charAt, i)
-			}
-		}
-
 		if _, err := builder.WriteRune(r); err != nil {
-			return "", fmt.Errorf("trying to insert '%s' at char = %d, but encountered error while, %s", newText, charAt, err)
+			return "", fmt.Errorf("trying to insert '%s' at char = %d, but failed at char = %d, %s", newText, charAt, i, err)
 		}
-
 		byteOffset += size
 	}
 
@@ -257,7 +220,7 @@ func processRange(fromReader *bufio.Reader, toBuilder *strings.Builder, delRange
 			return fmt.Errorf("processing range failed at line = %d, %s", i, err)
 		}
 	}
-	_ = copyUpToLine(fromReader, toBuilder, delRange.End.Line-delRange.Start.Line)
+
 	return nil
 }
 
