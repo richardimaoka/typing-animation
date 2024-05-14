@@ -2,6 +2,7 @@ package vscode
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -36,6 +37,106 @@ func copyUpToLine(fromReader *bufio.Reader, toBuilder *strings.Builder, uptoLine
 	return nil
 }
 
+func firstRune(line []byte, byteOffset int) (rune, int, error) {
+	r, size := utf8.DecodeRune(line[byteOffset:])
+	if r == '\n' {
+		return r, 0, errors.New("encountered new-line")
+	}
+	if r == utf8.RuneError {
+		if size == 0 {
+			return r, 0, errors.New("reached the end of line")
+		} else {
+			return r, 0, errors.New("encountered decoding error")
+		}
+	}
+
+	return r, size, nil
+}
+
+func readUptoPrevChar(line []byte, charAt int) (string, error) {
+	var builder strings.Builder
+
+	// copy line up to 1 char before charAt
+	byteOffset := 0
+	for i := 0; i < charAt; i++ {
+		r, size := utf8.DecodeRune(line[byteOffset:])
+		if r == '\n' {
+			return "", fmt.Errorf("trying to read up 1-char before char = %d, but encountered new-line at chart = %d", charAt, i)
+		}
+		if r == utf8.RuneError {
+			if size == 0 {
+				return "", fmt.Errorf("trying to read up to 1-char before char = %d, but reached the end of line at char = %d", charAt, i)
+			} else {
+				return "", fmt.Errorf("trying to read up to 1-char before char = %d, but encountered decoding error at char =  %d", charAt, i)
+			}
+		}
+
+		builder.WriteRune(r)
+		byteOffset += size
+	}
+
+	return builder.String(), nil
+}
+
+func readLineUpto(line []byte, upToChar int) (string, error) {
+	var builder strings.Builder
+
+	// copy line up to upToChar
+	byteOffset := 0
+	for i := 0; i <= upToChar; i++ {
+		r, size := utf8.DecodeRune(line[byteOffset:])
+		if r == '\n' {
+			return "", fmt.Errorf("trying to read up to char = %d, but encountered new-line at chart = %d", upToChar, i)
+		}
+		if r == utf8.RuneError {
+			if size == 0 {
+				return "", fmt.Errorf("trying to read up to char = %d, but reached the end of line at char = %d", upToChar, i)
+			} else {
+				return "", fmt.Errorf("trying to read up to char = %d, but encountered decoding error at char =  %d", upToChar, i)
+			}
+		}
+
+		builder.WriteRune(r)
+		byteOffset += size
+	}
+
+	return builder.String(), nil
+}
+
+func readLineSkipMiddle(line []byte, skipStartChar, skipEndChar int) (string, error) {
+	var builder strings.Builder
+
+	// copy line up to 1 char before skipStartChar
+	byteOffset := 0
+	for i := 0; i < skipStartChar; i++ {
+		r, size, err := firstRune(line, byteOffset)
+		if err != nil {
+			return "", fmt.Errorf("trying to read up to char = %d, failed at char = %d, %s", skipStartChar, i, err)
+		}
+		if _, err := builder.WriteRune(r); err != nil {
+			return "", fmt.Errorf("trying to read up to char = %d, failed at char = %d, %s", skipStartChar, i, err)
+		}
+		byteOffset += size
+	}
+
+	// skip from skipStartChar to skipEndChar - 1
+	for i := skipStartChar; i < skipEndChar; i++ {
+		_, size, err := firstRune(line, byteOffset)
+		if err != nil {
+			return "", fmt.Errorf("trying to read up to char = %d, failed at char = %d, %s", skipStartChar, i, err)
+		}
+		// just skip, no write to builder
+		byteOffset += size
+	}
+
+	// write the remaining
+	if _, err := builder.Write(line[byteOffset:]); err != nil {
+		return "", fmt.Errorf("trying to read up to char = %d, failed at writing string after char = %d, %s", skipStartChar, skipEndChar, err)
+	}
+
+	return builder.String(), nil
+}
+
 // Insert newText at chartAt on the line.
 // If line has '\n', '\n' must be at the end of line, otherwise, behavior is not guaranteed
 // If charAt is greater than the end of line, error is returned, otherwise, no error.
@@ -57,15 +158,22 @@ func insertInLine(charAt int, newText string, line []byte) (string, error) {
 			}
 		}
 
-		builder.WriteRune(r)
+		if _, err := builder.WriteRune(r); err != nil {
+			return "", fmt.Errorf("trying to insert '%s' at char = %d, but encountered error while, %s", newText, charAt, err)
+		}
+
 		byteOffset += size
 	}
 
 	// insert newText
-	builder.WriteString(newText)
+	if _, err := builder.WriteString(newText); err != nil {
+		return "", fmt.Errorf("trying to insert '%s' at char = %d, but encountered error, %s", newText, charAt, err)
+	}
 
 	// copy the rest of the line
-	builder.WriteString(string(line[byteOffset:]))
+	if _, err := builder.WriteString(string(line[byteOffset:])); err != nil {
+		return "", fmt.Errorf("trying to insert '%s' at char = %d, but encountered error, %s", newText, charAt, err)
+	}
 
 	return builder.String(), nil
 }
@@ -101,6 +209,54 @@ func processLine(fromReader *bufio.Reader, toBuilder *strings.Builder, pos Posit
 }
 
 func processRange(fromReader *bufio.Reader, toBuilder *strings.Builder, delRange Range) error {
+	if err := delRange.Validate(); err != nil {
+		return fmt.Errorf("processRange failed, %s", err)
+	}
+
+	// 1. Read the range-start line
+	line, err := fromReader.ReadBytes('\n')
+	if err == io.EOF {
+		if delRange.Start.Line != delRange.End.Line {
+			return fmt.Errorf("processing range failed at line = %d, unexpected EOF", delRange.Start.Line)
+		}
+		// Ignore EOF and continue - it doesn't matter whether the line ends in '\n' or EOF
+	} else if err != nil {
+		return fmt.Errorf("processing range failed at line = %d, %s", delRange.Start.Line, err)
+	}
+
+	// 2. Process the start line
+	if delRange.Start.Line == delRange.End.Line {
+		updatedLine, err := readLineSkipMiddle(line, delRange.Start.Character, delRange.End.Character)
+		if err != nil {
+			return fmt.Errorf("processing range failed at line = %d, %s", delRange.Start.Line, err)
+		}
+		_, err = toBuilder.WriteString(updatedLine)
+		if err != nil {
+			return fmt.Errorf("processing range failed at line = %d, %s", delRange.Start.Line, err)
+		}
+		// Return from the function !!! when delRange.Start.Line == delRange.End.Line
+		return nil
+
+	} else {
+		upToBeforeStart, err := readUptoPrevChar(line, delRange.Start.Character)
+		if err != nil {
+			return fmt.Errorf("processing range failed at line = %d, %s", delRange.Start.Line, err)
+		}
+		_, err = toBuilder.WriteString(upToBeforeStart)
+		if err != nil {
+			return fmt.Errorf("processing range failed at line = %d, %s", delRange.Start.Line, err)
+		}
+	}
+
+	// 3. Skip from `start line + 1` to `end line - 1`
+	for i := delRange.Start.Line + 1; i < delRange.End.Line; i++ {
+		_, err := fromReader.ReadBytes('\n')
+		if err == io.EOF {
+			return fmt.Errorf("processing range failed at line = %d, unexpected EOF before end line = %d", i, delRange.End.Line)
+		} else if err != nil {
+			return fmt.Errorf("processing range failed at line = %d, %s", i, err)
+		}
+	}
 	_ = copyUpToLine(fromReader, toBuilder, delRange.End.Line-delRange.Start.Line)
 	return nil
 }
