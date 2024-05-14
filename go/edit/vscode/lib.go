@@ -37,6 +37,7 @@ func copyUpToLine(fromReader *bufio.Reader, toBuilder *strings.Builder, uptoLine
 }
 
 // Insert newText at chartAt on the line.
+// If line has '\n', '\n' must be at the end of line, otherwise, behavior is not guaranteed
 // If charAt is greater than the end of line, error is returned, otherwise, no error.
 func insertInLine(charAt int, newText string, line []byte) (string, error) {
 	var builder strings.Builder
@@ -45,9 +46,14 @@ func insertInLine(charAt int, newText string, line []byte) (string, error) {
 	byteOffset := 0
 	for i := 0; i < charAt; i++ {
 		r, size := utf8.DecodeRune(line[byteOffset:])
+		if r == '\n' {
+			return "", fmt.Errorf("trying to insert '%s' at char = %d, but encountered new-line at chart = %d", newText, charAt, i)
+		}
 		if r == utf8.RuneError {
 			if size == 0 {
-				return "", fmt.Errorf("trying to insert '%s' at char = %d, but there are only %d chars on the line", newText, charAt, i)
+				return "", fmt.Errorf("trying to insert '%s' at char = %d, but reached the end of line at char = %d", newText, charAt, i)
+			} else {
+				return "", fmt.Errorf("trying to insert '%s' at char = %d, but encountered decoding error at char =  %d", newText, charAt, i)
 			}
 		}
 
