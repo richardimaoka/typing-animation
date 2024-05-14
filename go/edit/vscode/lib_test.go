@@ -16,24 +16,21 @@ func TestInsert(t *testing.T) {
 		newText      string
 		err          bool
 	}{
-		// "beginning":                {"testdata/insert/digits1.txt", vscode.Position{Line: 2, Character: 3}, "abc", false},
-		// "in the middle":            {"testdata/insert/digits2.txt", vscode.Position{Line: 0, Character: 0}, "aaaa", false},
-		// "in the middle Japanese":   {"testdata/insert/Japanese.txt", vscode.Position{Line: 3, Character: 6}, "すばらしい", false}, // And この文章のいくつかのpartは(char = 6 is「の」)
-		// "in the middle, multiline": {"testdata/insert/digits2.txt", vscode.Position{Line: 0, Character: 0}, "aaaa", false},
-		// "at the end":               {"testdata/insert/digits2.txt", vscode.Position{Line: 0, Character: 0}, "aaaa", false},
-		// "at the end, newline":      {"testdata/insert/digits2.txt", vscode.Position{Line: 0, Character: 0}, "aaaa", false},
 
-		"ERROR: negative line":       {"testdata/insert/1st_line_beginning.txt" /******/, vscode.Position{Line: -1, Character: 3}, "inserted ", true},
-		"1st line, at the beginning": {"testdata/insert/1st_line_beginning.txt" /******/, vscode.Position{Line: 0, Character: 0}, "inserted ", false},
-		"1st line, in the middle":    {"testdata/insert/1st_line_middle.txt" /*********/, vscode.Position{Line: 0, Character: 3}, " inserted ", false},
-		"1st line, at the end":       {"testdata/insert/1st_line_end.txt" /************/, vscode.Position{Line: 0, Character: 10}, " at the end", false},
-		"ERROR: 1st line, after end": {"testdata/insert/1st_line_end.txt" /************/, vscode.Position{Line: 2, Character: 11}, " at the end", true},
-		// "middle line":                          {"testdata/insert/middle_line.txt" /*************/, vscode.Position{Line: 2, Character: 3}, "abc", false},
-		// "middle line, Japanese":                {"testdata/insert/middle_line_Japanese.txt" /****/, vscode.Position{Line: 2, Character: 3}, "abc", false},
-		// "middle line, at the end":              {"testdata/insert/middle_line_at_the_end.txt" /**/, vscode.Position{Line: 2, Character: 3}, "abc", false},
-		// "middle line insert-multi-line text 1": {"testdata/insert/multi_line_insert1.txt" /******/, vscode.Position{Line: 2, Character: 3}, "abc", false},
-		// "middle line insert-multi-line text 2": {"testdata/insert/multi_line_insert2.txt" /******/, vscode.Position{Line: 2, Character: 3}, "abc", false},
-		// "last line":                            {"testdata/insert/1st_line2.txt" /***************/, vscode.Position{Line: 2, Character: 3}, "abc", false},
+		"ERROR: negative line":                  {"testdata/insert/1st_line_beginning.txt" /****/, vscode.Position{Line: -1, Character: 3}, "inserted ", true},
+		"1st line, at the beginning":            {"testdata/insert/1st_line_beginning.txt" /****/, vscode.Position{Line: 0, Character: 0}, "inserted ", false},
+		"1st line, in the middle":               {"testdata/insert/1st_line_middle.txt" /*******/, vscode.Position{Line: 0, Character: 3}, " inserted ", false},
+		"1st line, at the end":                  {"testdata/insert/1st_line_end.txt" /**********/, vscode.Position{Line: 0, Character: 10}, " at the end", false},
+		"ERROR: 1st line, after end":            {"testdata/insert/1st_line_end.txt" /**********/, vscode.Position{Line: 2, Character: 11}, " at the end", true},
+		"middle line":                           {"testdata/insert/middle_line_English.txt" /***/, vscode.Position{Line: 2, Character: 4}, " inserted ", false},
+		"middle line, Japanese":                 {"testdata/insert/middle_line_Japanese.txt" /**/, vscode.Position{Line: 2, Character: 4}, " inserted ", false},
+		"middle line insert-multi-line text":    {"testdata/insert/middle_line_multilne.txt" /**/, vscode.Position{Line: 2, Character: 4}, " inserted \nnext line", false},
+		"last line, at the end":                 {"testdata/insert/last_line_no_newline.txt" /**/, vscode.Position{Line: 5, Character: 10}, " inserted ", false},
+		"ERROR: last line, at the end":          {"testdata/insert/last_line_no_newline.txt" /**/, vscode.Position{Line: 5, Character: 11}, " inserted ", true},
+		"ERROR: after last line":                {"testdata/insert/last_line_no_newline.txt" /**/, vscode.Position{Line: 6, Character: 11}, " inserted ", true},
+		"last line, at the end, newline":        {"testdata/insert/last_line_newline.txt" /*****/, vscode.Position{Line: 5, Character: 10}, " inserted ", false},
+		"ERROR: last line, newline, at the end": {"testdata/insert/last_line_newline.txt" /*****/, vscode.Position{Line: 5, Character: 11}, " inserted ", true},
+		"last line, true end, newline":          {"testdata/insert/last_line_trueend.txt" /*****/, vscode.Position{Line: 6, Character: 0}, " inserted ", false},
 	}
 
 	for name, c := range cases {
