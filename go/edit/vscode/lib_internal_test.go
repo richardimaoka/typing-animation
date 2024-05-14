@@ -157,67 +157,21 @@ func TestProcessLine(t *testing.T) {
 		expected string
 		err      bool
 	}{
-		"Up to the 1st line with line zero": {
-			`Hello this is a test file.`,
-			Position{-1, 0},
-			"aaa",
-			"",
-			true,
-		},
-		"at the beginning": {
-			//              1         2
-			//    01234567890123456789012345
-			/**/ `Hello this is a test file.`,
-			Position{Line: 0, Character: 0},
-			"Good morning. ",
-			`Good morning. Hello this is a test file.`,
-			false,
-		},
-		"in the middle, English": {
-			//              1         2
-			//    01234567890123456789012345
-			/**/ `Hello this is a test file.`,
-			Position{Line: 0, Character: 15},
-			"n amazing",
-			`Hello this is a` + "n amazing " + `test file.`,
-			false,
-		},
-		"in the middle, Japanese": {
-			//                   1             2
-			//    01234 5 6 7 8 90 1 2 34567 89012345
-			/**/ `And この文章のいくつかのpartは`,
-			Position{Line: 0, Character: 9},
-			"中の",
-			`And この文章の中のいくつかのpartは`,
-			false,
-		},
-		"at the beginning, end in newline": {
-			//              1         2
-			//    01234567890123456789012345
-			/**/ `Hello this is a test file.\n`,
-			Position{Line: 0, Character: 0},
-			"Good morning. ",
-			`Good morning. Hello this is a test file.\n`,
-			false,
-		},
-		"in the middle, English, end in newline": {
-			//              1         2
-			//    01234567890123456789012345
-			/**/ `Hello this is a test file.\n`,
-			Position{Line: 0, Character: 15},
-			"n amazing",
-			`Hello this is a` + "n amazing " + `test file.\n`,
-			false,
-		},
-		"in the middle, Japanese, end in newline": {
-			//                   1             2
-			//    01234 5 6 7 8 90 1 2 34567 89012345
-			/**/ `And この文章のいくつかのpartは\n`,
-			Position{Line: 0, Character: 9},
-			"中の",
-			`And この文章の中のいくつかのpartは\n`,
-			false,
-		},
+		"at the beginning":                             {"0123456789" /********/, Position{Line: 0, Character: 0}, "Insert ", "Insert 0123456789", false},
+		"at the beginning, end in newline":             {"0123456789\n" /******/, Position{Line: 0, Character: 0}, "Insert ", "Insert 0123456789\n", false},
+		"in the middle, 1":                             {"0123456789" /********/, Position{Line: 0, Character: 1}, " insert ", "0 insert 123456789", false},
+		"in the middle, 2":                             {"0123456789" /********/, Position{Line: 0, Character: 2}, " insert ", "01 insert 23456789", false},
+		"in the middle, 3":                             {"0123456789" /********/, Position{Line: 0, Character: 3}, " insert ", "012 insert 3456789", false},
+		"in the middle, Japanese":                      {"012三四五六七89" /****/, Position{Line: 0, Character: 3}, " 中間 ", "012 中間 三四五六七89", false},
+		"in the middle, English, end in newline":       {"0123456789\n" /******/, Position{Line: 0, Character: 3}, " insert ", "012 insert 3456789\n", false},
+		"in the middle, Japanese, end in newline":      {"012三四五六七89\n" /**/, Position{Line: 0, Character: 7}, " 中間 ", "012三四五六 中間 七89\n", false},
+		"close to the end, Japanese":                   {"012三四五六七89" /****/, Position{Line: 0, Character: 9}, " 中間 ", "012三四五六七8 中間 9", false},
+		"at the end, Japanese":                         {"012三四五六七89" /****/, Position{Line: 0, Character: 10}, " 最後", "012三四五六七89 最後", false},
+		"ERROR: at the end, Japanese, after end 1":     {"012三四五六七89" /****/, Position{Line: 0, Character: 11}, " 最後より後", "", true},
+		"ERROR: at the end, Japanese, after end 2":     {"012三四五六七89" /****/, Position{Line: 0, Character: 12}, " 最後より後", "", true},
+		"at the end, Japanese, end in newline":         {"012三四五六七89\n" /**/, Position{Line: 0, Character: 10}, " 最後", "012三四五六七89 最後\n", false},
+		"ERROR: at the end, Japanese, after newline 1": {"012三四五六七89\n" /**/, Position{Line: 0, Character: 11}, " 最後より後", "", true},
+		"ERROR: at the end, Japanese, after newline 2": {"012三四五六七89\n" /**/, Position{Line: 0, Character: 12}, " 最後より後", "", true},
 	}
 
 	for name, c := range cases {
@@ -234,6 +188,9 @@ func TestProcessLine(t *testing.T) {
 			}
 
 			result := builder.String()
+			if c.err {
+				t.Fatalf("Expected error: but succeeded with result = %s", result)
+			}
 			if c.expected != result {
 				t.Errorf("%s", cmp.Diff(c.expected, result))
 			}
