@@ -163,21 +163,22 @@ func insertInternal(rwFile *os.File, position Position, newText string) error {
 }
 
 func Insert(filename string, position Position, newText string) error {
+	errorPrefix := fmt.Errorf("Insert() error in file = '%s'", filename)
 	// 1. Validate arguments
 	if err := position.Validate(); err != nil {
-		return fmt.Errorf("Insert() error, %s", err)
+		return fmt.Errorf("%s, %s", errorPrefix, err)
 	}
 
 	// 2. Open file
 	file, err := os.OpenFile(filename, syscall.O_RDWR, 0666)
 	if err != nil {
-		return fmt.Errorf("Insert() error, %s", err)
+		return fmt.Errorf("%s, %s", errorPrefix, err)
 	}
 	defer file.Close()
 
 	// 3. Internal logic
 	if err := insertInternal(file, position, newText); err != nil {
-		return fmt.Errorf("Insert() error, %s", err)
+		return fmt.Errorf("%s, %s", errorPrefix, err)
 	}
 
 	return nil
