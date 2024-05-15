@@ -210,7 +210,7 @@ func TestReadUpToPrevChar(t *testing.T) {
 		"3":           {"0123456789\n", 3, "012", false},
 		"9":           {"0123456789\n", 9, "012345678", false},
 		"10":          {"0123456789\n", 10, "0123456789", false},
-		"ERROR: 11":   {"0123456789\n", 11, "0123456789", true}, // error expected, as start can't be after new line
+		"ERROR: 11":   {"0123456789\n", 11, "0123456789", true}, // error expected, reading the newline char is not allowed by this method
 		"4 Japanese":  {"012三四五六七八九\n", 4, "012三", false},
 		"5 Japanese":  {"012三四五六七八九\n", 5, "012三四", false},
 		"6 Japanese":  {"012三四五六七八九\n", 6, "012三四五", false},
@@ -244,39 +244,25 @@ func TestReadLineWithSkip(t *testing.T) {
 	// 012三四五六七89
 	// `
 	cases := map[string]struct {
-		original string
-		delRange Range
-		expected string
-		err      bool
+		original  string
+		skipStart int
+		skipEnd   int
+		expected  string
+		err       bool
 	}{
-		// "no deletion 1": {"0123456789", Range{Position{Line: 0, Character: 3}, Position{Line: 0, Character: 0}}, "0123456789", false},
-		// "at the beginning 1": {"0123456789", Range{Position{Line: 0, Character: 0}, Position{Line: 0, Character: 1}}, "123456789", false},
-		// "at the beginning 2": {"0123456789", Range{Position{Line: 0, Character: 0}, Position{Line: 0, Character: 2}}, "23456789", false},
-		// "at the beginning 3": {"0123456789", Range{Position{Line: 0, Character: 0}, Position{Line: 0, Character: 3}}, "3456789", false},
-		"no deletion 2": {"0123456789", Range{Position{Line: 0, Character: 3}, Position{Line: 0, Character: 3}}, "0123456789", false},
-
-		// "at the beginning, end in newline":             {"0123456789\n" /******/, Position{Line: 0, Character: 0}, "Insert ", "Insert 0123456789\n", false},
-		// "in the middle, 1":                             {"0123456789" /********/, Position{Line: 0, Character: 1}, " insert ", "0 insert 123456789", false},
-		// "in the middle, 2":                             {"0123456789" /********/, Position{Line: 0, Character: 2}, " insert ", "01 insert 23456789", false},
-		// "in the middle, 3":                             {"0123456789" /********/, Position{Line: 0, Character: 3}, " insert ", "012 insert 3456789", false},
-		// "in the middle, Japanese":                      {"012三四五六七89" /****/, Position{Line: 0, Character: 3}, " 中間 ", "012 中間 三四五六七89", false},
-		// "in the middle, English, end in newline":       {"0123456789\n" /******/, Position{Line: 0, Character: 3}, " insert ", "012 insert 3456789\n", false},
-		// "in the middle, Japanese, end in newline":      {"012三四五六七89\n" /**/, Position{Line: 0, Character: 7}, " 中間 ", "012三四五六 中間 七89\n", false},
-		// "close to the end, Japanese":                   {"012三四五六七89" /****/, Position{Line: 0, Character: 9}, " 中間 ", "012三四五六七8 中間 9", false},
-		// "at the end, Japanese":                         {"012三四五六七89" /****/, Position{Line: 0, Character: 10}, " 最後", "012三四五六七89 最後", false},
-		// "ERROR: at the end, Japanese, after end 1":     {"012三四五六七89" /****/, Position{Line: 0, Character: 11}, " 最後より後", "", true},
-		// "ERROR: at the end, Japanese, after end 2":     {"012三四五六七89" /****/, Position{Line: 0, Character: 12}, " 最後より後", "", true},
-		// "at the end, Japanese, end in newline":         {"012三四五六七89\n" /**/, Position{Line: 0, Character: 10}, " 最後", "012三四五六七89 最後\n", false},
-		// "ERROR: at the end, Japanese, after newline 1": {"012三四五六七89\n" /**/, Position{Line: 0, Character: 11}, " 最後より後", "", true},
-		// "ERROR: at the end, Japanese, after newline 2": {"012三四五六七89\n" /**/, Position{Line: 0, Character: 12}, " 最後より後", "", true},
+		"0-0":                  {"0123456789\n" /********/, 0, 0, "0123456789\n", false},
+		"2-3 Japanese":         {"012三四五六七八九\n" /**/, 2, 3, "01三四五六七八九\n", false},
+		"2-4 Japanese":         {"012三四五六七八九\n" /**/, 2, 4, "01四五六七八九\n", false},
+		"7-9 Japanese":         {"012三四五六七八九\n" /**/, 7, 9, "012三四五六九\n", false},
+		"7-10 Japanese":        {"012三四五六七八九\n" /**/, 7, 10, "012三四五六\n", false},
+		"ERROR: 7-11 Japanese": {"012三四五六七八九\n" /**/, 7, 11, "012三四五六\n", true}, // error expected, skipping the newline char is not allowed by this method
+		"ERROR: 7-12 Japanese": {"012三四五六七八九\n" /**/, 7, 12, "012三四五六\n", true},
 	}
 
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
-			var builder strings.Builder
-			bufReader := bufio.NewReader(strings.NewReader(c.original))
-
-			err := processLinesOnRange(bufReader, &builder, c.delRange)
+			line := []byte(c.original)
+			result, err := readLineWithSkip(line, c.skipStart, c.skipEnd)
 			if err != nil {
 				if c.err {
 					return // expected error
@@ -284,7 +270,6 @@ func TestReadLineWithSkip(t *testing.T) {
 				t.Fatalf("unexpected error: %s", err)
 			}
 
-			result := builder.String()
 			if c.err {
 				t.Fatalf("Expected error: but succeeded with result = %s", result)
 			}

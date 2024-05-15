@@ -100,7 +100,7 @@ func readLineWithSkip(line []byte, skipStartChar, skipEndChar int) (string, erro
 	for i := skipStartChar; i < skipEndChar; i++ {
 		_, size, err := firstNonEndingRune(line, byteOffset)
 		if err != nil {
-			return "", fmt.Errorf("trying to skip up to char = %d, failed at char = %d, %s", skipStartChar, i, err)
+			return "", fmt.Errorf("trying to skip up to char = %d, failed at char = %d, %s", skipEndChar, i, err)
 		}
 		// just skip, no write to builder
 		byteOffset += size
@@ -108,7 +108,7 @@ func readLineWithSkip(line []byte, skipStartChar, skipEndChar int) (string, erro
 
 	// write the remaining
 	if _, err := builder.Write(line[byteOffset:]); err != nil {
-		return "", fmt.Errorf("trying to write up to char = %d, failed at writing string after char = %d, %s", skipStartChar, skipEndChar, err)
+		return "", fmt.Errorf("failed at writing string after char = %d, %s", skipEndChar, err)
 	}
 
 	return builder.String(), nil
