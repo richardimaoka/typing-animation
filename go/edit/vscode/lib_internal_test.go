@@ -239,10 +239,6 @@ func TestReadUpToPrevChar(t *testing.T) {
 }
 
 func TestReadLineWithSkip(t *testing.T) {
-	// 	original := `0123456789
-	// 0123456789
-	// 012三四五六七89
-	// `
 	cases := map[string]struct {
 		original  string
 		skipStart int
@@ -281,36 +277,26 @@ func TestReadLineWithSkip(t *testing.T) {
 }
 
 func TestProcessLinesOnRange(t *testing.T) {
-	// 	original := `0123456789
-	// 0123456789
-	// 012三四五六七89
-	// `
+	twoLines := `012三四五六七八九
+012三四56七八九`
+
+	threeLines := `012三四五六七八九
+012三四56七八九
+012三456七八9`
+
 	cases := map[string]struct {
 		original string
 		delRange Range
 		expected string
 		err      bool
 	}{
-		// "no deletion 1": {"0123456789", Range{Position{Line: 0, Character: 3}, Position{Line: 0, Character: 0}}, "0123456789", false},
-		// "at the beginning 1": {"0123456789", Range{Position{Line: 0, Character: 0}, Position{Line: 0, Character: 1}}, "123456789", false},
-		// "at the beginning 2": {"0123456789", Range{Position{Line: 0, Character: 0}, Position{Line: 0, Character: 2}}, "23456789", false},
-		// "at the beginning 3": {"0123456789", Range{Position{Line: 0, Character: 0}, Position{Line: 0, Character: 3}}, "3456789", false},
-		"no deletion 2": {"0123456789", Range{Position{Line: 0, Character: 3}, Position{Line: 0, Character: 3}}, "0123456789", false},
-
-		// "at the beginning, end in newline":             {"0123456789\n" /******/, Position{Line: 0, Character: 0}, "Insert ", "Insert 0123456789\n", false},
-		// "in the middle, 1":                             {"0123456789" /********/, Position{Line: 0, Character: 1}, " insert ", "0 insert 123456789", false},
-		// "in the middle, 2":                             {"0123456789" /********/, Position{Line: 0, Character: 2}, " insert ", "01 insert 23456789", false},
-		// "in the middle, 3":                             {"0123456789" /********/, Position{Line: 0, Character: 3}, " insert ", "012 insert 3456789", false},
-		// "in the middle, Japanese":                      {"012三四五六七89" /****/, Position{Line: 0, Character: 3}, " 中間 ", "012 中間 三四五六七89", false},
-		// "in the middle, English, end in newline":       {"0123456789\n" /******/, Position{Line: 0, Character: 3}, " insert ", "012 insert 3456789\n", false},
-		// "in the middle, Japanese, end in newline":      {"012三四五六七89\n" /**/, Position{Line: 0, Character: 7}, " 中間 ", "012三四五六 中間 七89\n", false},
-		// "close to the end, Japanese":                   {"012三四五六七89" /****/, Position{Line: 0, Character: 9}, " 中間 ", "012三四五六七8 中間 9", false},
-		// "at the end, Japanese":                         {"012三四五六七89" /****/, Position{Line: 0, Character: 10}, " 最後", "012三四五六七89 最後", false},
-		// "ERROR: at the end, Japanese, after end 1":     {"012三四五六七89" /****/, Position{Line: 0, Character: 11}, " 最後より後", "", true},
-		// "ERROR: at the end, Japanese, after end 2":     {"012三四五六七89" /****/, Position{Line: 0, Character: 12}, " 最後より後", "", true},
-		// "at the end, Japanese, end in newline":         {"012三四五六七89\n" /**/, Position{Line: 0, Character: 10}, " 最後", "012三四五六七89 最後\n", false},
-		// "ERROR: at the end, Japanese, after newline 1": {"012三四五六七89\n" /**/, Position{Line: 0, Character: 11}, " 最後より後", "", true},
-		// "ERROR: at the end, Japanese, after newline 2": {"012三四五六七89\n" /**/, Position{Line: 0, Character: 12}, " 最後より後", "", true},
+		// The line numbers themselves don't matter, but the line diff (= end line - start line) matters
+		"same line, no deletion 1": {"012三四五六七八九\n", Range{Position{Line: 0, Character: 0}, Position{Line: 0, Character: 0}}, "012三四五六七八九\n", false},
+		"same line, no deletion 2": {"012三四五六七八九\n", Range{Position{Line: 1, Character: 3}, Position{Line: 1, Character: 3}}, "012三四五六七八九\n", false},
+		"diff line 1":              {twoLines /*********/, Range{Position{Line: 0, Character: 10}, Position{Line: 1, Character: 0}}, "012三四五六七八九012三四56七八九", false},
+		"diff line 2":              {twoLines /*********/, Range{Position{Line: 0, Character: 10}, Position{Line: 1, Character: 5}}, "012三四五六七八九56七八九", false},
+		"diff line 3":              {threeLines /*******/, Range{Position{Line: 0, Character: 4}, Position{Line: 2, Character: 5}}, "012三56七八9", false},
+		"ERROR: diff line":         {threeLines /*******/, Range{Position{Line: 0, Character: 4}, Position{Line: 3, Character: 5}}, "", true},
 	}
 
 	for name, c := range cases {
