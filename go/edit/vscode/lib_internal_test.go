@@ -291,12 +291,16 @@ func TestProcessLinesOnRange(t *testing.T) {
 		err      bool
 	}{
 		// The line numbers themselves don't matter, but the line diff (= end line - start line) matters
-		"same line, no deletion 1": {"012三四五六七八九\n", Range{Position{Line: 0, Character: 0}, Position{Line: 0, Character: 0}}, "012三四五六七八九\n", false},
-		"same line, no deletion 2": {"012三四五六七八九\n", Range{Position{Line: 1, Character: 3}, Position{Line: 1, Character: 3}}, "012三四五六七八九\n", false},
-		"diff line 1":              {twoLines /*********/, Range{Position{Line: 0, Character: 10}, Position{Line: 1, Character: 0}}, "012三四五六七八九012三四56七八九", false},
-		"diff line 2":              {twoLines /*********/, Range{Position{Line: 0, Character: 10}, Position{Line: 1, Character: 5}}, "012三四五六七八九56七八九", false},
-		"diff line 3":              {threeLines /*******/, Range{Position{Line: 0, Character: 4}, Position{Line: 2, Character: 5}}, "012三56七八9", false},
-		"ERROR: diff line":         {threeLines /*******/, Range{Position{Line: 0, Character: 4}, Position{Line: 3, Character: 5}}, "", true},
+		"same line, no deletion 1":      {"012三四五六七八九\n", Range{Position{Line: 0, Character: 0}, Position{Line: 0, Character: 0}}, "012三四五六七八九\n", false},
+		"same line, no deletion 2":      {"012三四五六七八九\n", Range{Position{Line: 1, Character: 3}, Position{Line: 1, Character: 3}}, "012三四五六七八九\n", false},
+		"same line, deletion 1":         {"012三四五六七八九\n", Range{Position{Line: 1, Character: 3}, Position{Line: 1, Character: 4}}, "012四五六七八九\n", false},
+		"same line, deletion 2":         {"012三四五六七八九\n", Range{Position{Line: 1, Character: 3}, Position{Line: 1, Character: 5}}, "012五六七八九\n", false},
+		"same line, deletion 3":         {"012三四五六七八九\n", Range{Position{Line: 1, Character: 3}, Position{Line: 1, Character: 10}}, "012\n", false},
+		"ERROR: same line, after end":   {"012三四五六七八九\n", Range{Position{Line: 1, Character: 3}, Position{Line: 1, Character: 11}}, "", true},
+		"diff line 1":                   {twoLines /*********/, Range{Position{Line: 0, Character: 10}, Position{Line: 1, Character: 0}}, "012三四五六七八九012三四56七八九", false},
+		"diff line 2":                   {twoLines /*********/, Range{Position{Line: 0, Character: 10}, Position{Line: 1, Character: 5}}, "012三四五六七八九56七八九", false},
+		"diff line 3":                   {threeLines /*******/, Range{Position{Line: 0, Character: 4}, Position{Line: 2, Character: 5}}, "012三56七八9", false},
+		"ERROR: diff line, outof range": {threeLines /*******/, Range{Position{Line: 0, Character: 4}, Position{Line: 3, Character: 5}}, "", true},
 	}
 
 	for name, c := range cases {

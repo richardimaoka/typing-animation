@@ -360,6 +360,11 @@ func deleteInternal(rwFile *os.File, delRange Range) error {
 	}
 
 	// 4. Write to file
+	//   os.Truncate() is needed because the deletion makes file shorter,
+	//   otherwise, there will be a residual contents at the end of the file
+	if err := os.Truncate(rwFile.Name(), 0); err != nil {
+		return err
+	}
 	if err := writeFromBeginning(rwFile, toBuilder.String()); err != nil {
 		return err
 	}
