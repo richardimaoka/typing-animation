@@ -92,21 +92,9 @@ func TestDelete(t *testing.T) {
 		delRange     vscode.Range
 		err          bool
 	}{
-		"1st line, middle": {"testdata/delete/first_line_middle.txt" /****/, vscode.Range{vscode.Position{Line: 0, Character: 4}, vscode.Position{Line: 0, Character: 7}}, false},
-		// "1st line, at the beginning":            {"testdata/insert/1st_line_beginning.txt" /****/, vscode.Position{Line: 0, Character: 0}, "inserted ", false},
-		// "1st line, in the middle":               {"testdata/insert/1st_line_middle.txt" /*******/, vscode.Position{Line: 0, Character: 3}, " inserted ", false},
-		// "1st line, at the end":                  {"testdata/insert/1st_line_end.txt" /**********/, vscode.Position{Line: 0, Character: 10}, " at the end", false},
-		// "ERROR: 1st line, after end":            {"testdata/insert/1st_line_end.txt" /**********/, vscode.Position{Line: 2, Character: 11}, " at the end", true},
-		// "middle line":                           {"testdata/insert/middle_line_English.txt" /***/, vscode.Position{Line: 2, Character: 4}, " inserted ", false},
-		// "middle line, Japanese":                 {"testdata/insert/middle_line_Japanese.txt" /**/, vscode.Position{Line: 2, Character: 4}, " inserted ", false},
-		// "middle line insert-multi-line text":    {"testdata/insert/middle_line_multilne.txt" /**/, vscode.Position{Line: 2, Character: 4}, " inserted \nnext line", false},
-		// "last line, at the end":                 {"testdata/insert/last_line_no_newline.txt" /**/, vscode.Position{Line: 5, Character: 10}, " inserted ", false},
-		// "ERROR: last line, at the end":          {"testdata/insert/last_line_no_newline.txt" /**/, vscode.Position{Line: 5, Character: 11}, " inserted ", true},
-		// "ERROR: after last line":                {"testdata/insert/last_line_no_newline.txt" /**/, vscode.Position{Line: 6, Character: 11}, " inserted ", true},
-		// "last line, at the end, newline":        {"testdata/insert/last_line_newline.txt" /*****/, vscode.Position{Line: 5, Character: 10}, " inserted ", false},
-		// "ERROR: last line, newline, at the end": {"testdata/insert/last_line_newline.txt" /*****/, vscode.Position{Line: 5, Character: 11}, " inserted ", true},
-		// "last line, true end, newline":          {"testdata/insert/last_line_trueend.txt" /*****/, vscode.Position{Line: 6, Character: 0}, " inserted ", false},
-
+		"1st line, middle": {"testdata/delete/first_line_middle.txt" /*******/, vscode.Range{vscode.Position{Line: 0, Character: 4}, vscode.Position{Line: 0, Character: 7}}, false},
+		"1st line, end":    {"testdata/delete/first_line_end.txt" /*******/, vscode.Range{vscode.Position{Line: 0, Character: 10}, vscode.Position{Line: 1, Character: 0}}, false},
+		"1st line, to 2nd": {"testdata/delete/middle_line_to_next_line.txt" /****/, vscode.Range{vscode.Position{Line: 2, Character: 3}, vscode.Position{Line: 3, Character: 3}}, false},
 	}
 
 	for name, c := range cases {
