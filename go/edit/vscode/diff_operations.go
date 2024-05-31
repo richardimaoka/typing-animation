@@ -1,17 +1,21 @@
 package vscode
 
-type Operation int
+type DiffOperation int
 
 const (
 	// DiffDelete item represents a delete diff.
-	DiffDelete Operation = -1
+	DiffDelete DiffOperation = -1
 	// DiffInsert item represents an insert diff.
-	DiffInsert Operation = 1
+	DiffInsert DiffOperation = 1
 	// DiffEqual item represents an equal diff.
-	DiffEqual Operation = 0
+	DiffEqual DiffOperation = 0
 )
 
 type Diff struct {
-	Type Operation
+	Type DiffOperation
 	Text string
+}
+
+func (d Diff) RawEdit() Edit {
+	return nil
 }

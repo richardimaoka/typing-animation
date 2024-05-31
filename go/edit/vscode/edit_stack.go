@@ -22,3 +22,7 @@ func (s *EditStack) AppendInsert(text string) {
 	insert := Diff{Type: DiffInsert, Text: text}
 	s.diffs = append(s.diffs, insert)
 }
+
+func (s *EditStack) CalcEdits() []Edit {
+	return nil
+}
