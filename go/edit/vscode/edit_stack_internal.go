@@ -2,13 +2,15 @@ package vscode
 
 import (
 	"errors"
+	"fmt"
+	"strings"
 	"unicode/utf8"
 )
 
 // Count the number of runes in line
 // line should not contain '\n'
 //
-// If line is empty, this should return zero count
+// If line is empty, this should return the count of zero
 func countRunesInLine(line []byte) (int, error) {
 	if len(line) == 0 {
 		return 0, nil
@@ -35,4 +37,38 @@ func countRunesInLine(line []byte) (int, error) {
 	}
 
 	return runeCount, nil
+}
+
+func countRunesInLineS(line string) (int, error) {
+	return countRunesInLine([]byte(line))
+}
+
+func positionAfterAdd(currentPos Position, newText string) (Position, error) {
+	linesToAdd := strings.Split(newText, "\n")
+
+	if len(linesToAdd) == 1 {
+		line := linesToAdd[0]
+		runeCount, err := countRunesInLineS(line)
+		if err != nil {
+			return Position{}, fmt.Errorf("failed to calculate new position after add %s", err)
+		}
+
+		return Position{
+			Line:      currentPos.Line,
+			Character: currentPos.Character + runeCount,
+		}, nil
+
+	} else {
+		lastLine := linesToAdd[len(linesToAdd)-1]
+
+		runeCount, err := countRunesInLineS(lastLine)
+		if err != nil {
+			return Position{}, fmt.Errorf("failed to calculate new position after add %s", err)
+		}
+
+		return Position{
+			Line:      currentPos.Line + len(linesToAdd) - 1,
+			Character: runeCount,
+		}, nil
+	}
 }

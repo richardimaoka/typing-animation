@@ -2,6 +2,8 @@ package vscode
 
 import (
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestCountRunesInLine(t *testing.T) {
@@ -10,6 +12,7 @@ func TestCountRunesInLine(t *testing.T) {
 		expected int
 		err      bool
 	}{
+		"zero count":                   {"", 0, false},
 		"ASCII":                        {"0123456789", 10, false},
 		"Japanese":                     {"012三四五六七八九", 10, false},
 		"ERROR new line":               {"012三四五六七八九\n", 0, true},
@@ -32,6 +35,39 @@ func TestCountRunesInLine(t *testing.T) {
 			}
 			if c.expected != result {
 				t.Errorf("Result = %d is different from expected = %d", result, c.expected)
+			}
+		})
+	}
+}
+
+func TestNewPositionAfterAdd(t *testing.T) {
+	cases := map[string]struct {
+		currentPos Position
+		newText    string
+		expected   Position
+		err        bool
+	}{
+		"empty":                       {Position{Line: 3, Character: 10}, "" /*********************/, Position{Line: 3, Character: 10}, false},
+		"single line":                 {Position{Line: 3, Character: 10}, "0123456789" /***********/, Position{Line: 3, Character: 10 + 10}, false},
+		"multi lines":                 {Position{Line: 3, Character: 10}, "0123456789\n012三四" /**/, Position{Line: 4, Character: 5}, false},
+		"multi lines end in new-line": {Position{Line: 3, Character: 10}, "0123456789\n" /*********/, Position{Line: 4, Character: 0}, false},
+	}
+
+	for name, c := range cases {
+		t.Run(name, func(t *testing.T) {
+			result, err := positionAfterAdd(c.currentPos, c.newText)
+			if err != nil {
+				if c.err {
+					return // expected error
+				}
+				t.Fatalf("unexpected error: %s", err)
+			}
+
+			if c.err {
+				t.Fatalf("Expected error: but succeeded with result = %+v", result)
+			}
+			if c.expected != result {
+				t.Errorf("%s", cmp.Diff(c.expected, result))
 			}
 		})
 	}
