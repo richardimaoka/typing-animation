@@ -2,6 +2,7 @@ package vscode
 
 type EditStack struct {
 	diffs []Diff
+	// currentPosition Position
 }
 
 func NewEditStack() *EditStack {

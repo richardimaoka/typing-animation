@@ -36,10 +36,10 @@ func copyUpToLine(fromReader *bufio.Reader, toBuilder *strings.Builder, uptoLine
 	return nil
 }
 
-// Reading the first run with offset byteOffset.
+// Reading the rune with byteOffset.
 // This function expects a non-ending rune.
-// So, it returns error if the rune is new-line, reached the end of line, or encountered rune erorr.
-func firstNonEndingRune(line []byte, byteOffset int) (rune, int, error) {
+// So, it returns error if the rune is new-line, reached the end of line (i.e. no rune to read), or encountered rune erorr.
+func readNonEndingRune(line []byte, byteOffset int) (rune, int, error) {
 	r, size := utf8.DecodeRune(line[byteOffset:])
 	if r == '\n' {
 		return r, 0, errors.New("encountered new-line")
@@ -61,7 +61,7 @@ func readUptoPrevChar(line []byte, charAt int) (string, error) {
 	// copy line up to charAt - 1
 	byteOffset := 0
 	for i := 0; i < charAt; i++ {
-		r, size, err := firstNonEndingRune(line, byteOffset)
+		r, size, err := readNonEndingRune(line, byteOffset)
 		if err != nil {
 			return "", fmt.Errorf("trying to read up to 1-char before char = %d, failed at char = %d, %s", charAt, i, err)
 		}
@@ -85,7 +85,7 @@ func readLineWithSkip(line []byte, skipStartChar, skipEndChar int) (string, erro
 	// Copy line up to skipStartChar - 1
 	byteOffset := 0
 	for i := 0; i < skipStartChar; i++ {
-		r, size, err := firstNonEndingRune(line, byteOffset)
+		r, size, err := readNonEndingRune(line, byteOffset)
 		if err != nil {
 			return "", fmt.Errorf("trying to read up to 1-char before char = %d, failed at char = %d, %s", skipStartChar, i, err)
 		}
@@ -97,7 +97,7 @@ func readLineWithSkip(line []byte, skipStartChar, skipEndChar int) (string, erro
 
 	// Skip from skipStartChar to skipEndChar - 1
 	for i := skipStartChar; i < skipEndChar; i++ {
-		_, size, err := firstNonEndingRune(line, byteOffset)
+		_, size, err := readNonEndingRune(line, byteOffset)
 		if err != nil {
 			return "", fmt.Errorf("trying to skip up to char = %d, failed at char = %d, %s", skipEndChar, i, err)
 		}
@@ -122,7 +122,7 @@ func insertInLine(charAt int, newText string, line []byte) (string, error) {
 	// copy the line up to 1-char before charAt
 	byteOffset := 0
 	for i := 0; i < charAt; i++ {
-		r, size, err := firstNonEndingRune(line, byteOffset)
+		r, size, err := readNonEndingRune(line, byteOffset)
 		if err != nil {
 			return "", fmt.Errorf("trying to insert '%s' at char = %d, but failed at char = %d, %s", newText, charAt, i, err)
 		}

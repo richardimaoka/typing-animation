@@ -1,5 +1,7 @@
 package main
 
+import "github.com/richardimaoka/typing-animation/go/example"
+
 func main() {
 	// beforeFile, err := os.Open("testdata/before.txt")
 	// if err != nil {
@@ -38,4 +40,5 @@ func main() {
 	// // writeFile.Insert(vscode.Position{Line: 33, Character: 17}, "props.todos.reverse()")
 
 	// // os.Remove(newFileName)
+	example.Experiment()
 }
