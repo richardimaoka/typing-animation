@@ -40,5 +40,5 @@ func main() {
 	// // writeFile.Insert(vscode.Position{Line: 33, Character: 17}, "props.todos.reverse()")
 
 	// // os.Remove(newFileName)
-	example.Experiment()
+	example.ExperimentFiles()
 }

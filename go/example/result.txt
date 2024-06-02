@@ -1,0 +1,12 @@
+func newContext(ctx context.Context, resource, name string, gvk schema.GroupVersionKind) context.Context {
+	oldInfo, found := genericapirequest.RequestInfoFrom(ctx)
+	if !found {
+		return ctx
+	}
+	newInfo := genericapirequest.RequestInfo{
+		IsResourceRequest: true,
+		Verb:              "get",
+		Namespace:         oldInfo.Namespace,
+		Resource:          resource,
+		Name:              name,
+		Parts:             []string{resource, name},

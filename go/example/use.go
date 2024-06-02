@@ -2,6 +2,8 @@ package example
 
 import (
 	"fmt"
+	"os"
+	"time"
 
 	"github.com/richardimaoka/typing-animation/go/edit/vscode"
 	"github.com/sergi/go-diff/diffmatchpatch"
@@ -69,4 +71,52 @@ func Experiment() {
 	fmt.Printf("%+v\n", diffs)
 
 	buildStack(diffs)
+}
+
+func ExperimentFiles() {
+	before, err := os.ReadFile("./example/before.txt")
+	if err != nil {
+		panic(err)
+	}
+
+	after, err := os.ReadFile("./example/after.txt")
+	if err != nil {
+		panic(err)
+	}
+
+	resultFile := "./example/result.txt"
+	if err = os.WriteFile(resultFile, before, 0666); err != nil {
+		panic(err)
+	}
+	defer func() {
+		if err = os.WriteFile(resultFile, before, 0666); err != nil {
+			panic(err)
+		}
+	}()
+
+	dmp := diffmatchpatch.New()
+	diffs := dmp.DiffMain(string(before), string(after), true)
+
+	buildStack(diffs)
+
+	vscode.Insert(resultFile, vscode.Position{Line: 1, Character: 2}, "abcdefg1235998")
+	time.Sleep(300 * time.Millisecond)
+	vscode.Insert(resultFile, vscode.Position{Line: 1, Character: 2}, "abcdefg1235998")
+	time.Sleep(300 * time.Millisecond)
+	vscode.Insert(resultFile, vscode.Position{Line: 1, Character: 2}, "abcdefg1235998")
+	time.Sleep(300 * time.Millisecond)
+	vscode.Insert(resultFile, vscode.Position{Line: 1, Character: 2}, "abcdefg1235998")
+	time.Sleep(300 * time.Millisecond)
+	time.Sleep(300 * time.Millisecond)
+	time.Sleep(300 * time.Millisecond)
+	vscode.Insert(resultFile, vscode.Position{Line: 1, Character: 2}, "abcdefg1235998")
+	time.Sleep(300 * time.Millisecond)
+	vscode.Insert(resultFile, vscode.Position{Line: 1, Character: 2}, "abcdefg1235998")
+	time.Sleep(300 * time.Millisecond)
+	vscode.Insert(resultFile, vscode.Position{Line: 1, Character: 2}, "abcdefg1235998")
+	time.Sleep(300 * time.Millisecond)
+	vscode.Insert(resultFile, vscode.Position{Line: 1, Character: 2}, "abcdefg1235998")
+	time.Sleep(300 * time.Millisecond)
+	vscode.Insert(resultFile, vscode.Position{Line: 1, Character: 2}, "abcdefg1235998")
+
 }

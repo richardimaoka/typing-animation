@@ -1,0 +1,8 @@
+func newContext(ctx context.Context, resource, name, namespace string, gvk schema.GroupVersionKind) context.Context {
+	newInfo := genericapirequest.RequestInfo{
+		IsResourceRequest: true,
+		Verb:              "get",
+		Namespace:         namespace,
+		Resource:          resource,
+		Name:              name,
+		Parts:             []string{resource, name}
