@@ -54,8 +54,8 @@ func TestDiffToEdit(t *testing.T) {
 		"equal single line": {initPos, Diff{DiffEqual, "a" /********/}, nil, Position{Line: 3, Character: 11}, false},
 		"equal multi line":  {initPos, Diff{DiffEqual, "aaaa\nb\nccc"}, nil, Position{Line: 5, Character: 3}, false},
 
-		"delete single line": {initPos, Diff{DiffDelete, "a" /********/}, EditDelete{Range{initPos, Position{Line: 3, Character: 11}}}, initPos, false},
-		"delete multi line":  {initPos, Diff{DiffDelete, "aaaa\nb\nccc"}, EditDelete{Range{initPos, Position{Line: 5, Character: 3}}}, initPos, false},
+		"delete single line": {initPos, Diff{DiffDelete, "a" /********/}, EditDelete{"a" /********/, Range{initPos, Position{Line: 3, Character: 11}}}, initPos, false},
+		"delete multi line":  {initPos, Diff{DiffDelete, "aaaa\nb\nccc"}, EditDelete{"aaaa\nb\nccc", Range{initPos, Position{Line: 5, Character: 3}}}, initPos, false},
 	}
 
 	for name, c := range cases {

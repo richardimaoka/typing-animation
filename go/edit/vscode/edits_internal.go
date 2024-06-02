@@ -78,7 +78,7 @@ func deleteCharByChar(currentPos Position, line string) ([]Edit, error) {
 
 		edits = append(edits,
 			EditDelete{
-				DelRange: Range{
+				DeleteRange: Range{
 					Start: currentPos,
 					End: Position{
 						Line:      currentPos.Line,
@@ -149,7 +149,7 @@ func deleteWordByWord(currentPos Position, lineString string) ([]Edit, error) {
 
 		edits = append(edits,
 			EditDelete{
-				DelRange: Range{
+				DeleteRange: Range{
 					Start: currentPos,
 					End: Position{
 						Line:      currentPos.Line,
@@ -179,8 +179,8 @@ func splitInsertByLine(insert EditInsert) ([]Edit, error) {
 }
 
 func splitDeleteByLine(delete EditDelete) ([]Edit, error) {
-	start := delete.DelRange.Start
-	end := delete.DelRange.End
+	start := delete.DeleteRange.Start
+	end := delete.DeleteRange.End
 
 	var edits []Edit
 	for l := start.Line; l <= end.Line; l++ {
@@ -198,7 +198,7 @@ func splitDeleteByLine(delete EditDelete) ([]Edit, error) {
 			lineEnd = Position{Line: l + 1, Character: 0}
 		}
 
-		edits = append(edits, EditDelete{DelRange: Range{Start: lineStart, End: lineEnd}})
+		edits = append(edits, EditDelete{DeleteRange: Range{Start: lineStart, End: lineEnd}})
 	}
 
 	return edits, nil

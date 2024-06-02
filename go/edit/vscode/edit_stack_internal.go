@@ -64,7 +64,7 @@ func diffToEdit(currentPos Position, diff Diff) (Edit, Position, error) {
 
 	case DiffDelete:
 		// Return the original currentPos, because the cursor doesn't move after deletion
-		return EditDelete{Range{Start: currentPos, End: editEndPos}}, currentPos, nil
+		return EditDelete{diff.Text, Range{Start: currentPos, End: editEndPos}}, currentPos, nil
 
 	default:
 		return nil, Position{}, fmt.Errorf("diff type = %d is invalid", diff.Type)

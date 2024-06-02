@@ -10,7 +10,6 @@ const (
 
 // Interface representing atomic edit
 type Edit interface {
-	IsEdit() bool
 	Apply(filename string) error
 	Split(strategy EditSplitStrategy) ([]Edit, error)
 }
@@ -22,16 +21,8 @@ type EditInsert struct {
 }
 
 type EditDelete struct {
-	DelRange Range
-}
-
-func (e EditInsert) IsEdit() bool {
-
-	return true
-}
-
-func (e EditDelete) IsEdit() bool {
-	return true
+	DeleteText  string
+	DeleteRange Range
 }
 
 func (e EditInsert) Apply(filename string) error {
@@ -39,7 +30,7 @@ func (e EditInsert) Apply(filename string) error {
 }
 
 func (e EditDelete) Apply(filename string) error {
-	return Delete(filename, e.DelRange)
+	return Delete(filename, e.DeleteRange)
 }
 
 func (e EditInsert) Split(strategy EditSplitStrategy) ([]Edit, error) {
