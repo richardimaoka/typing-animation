@@ -37,6 +37,10 @@ func (s *EditStack) CalcEdits() ([]Edit, error) {
 			return nil, err
 		}
 
+		if edit == nil {
+			continue
+		}
+
 		edits = append(edits, edit)
 	}
 

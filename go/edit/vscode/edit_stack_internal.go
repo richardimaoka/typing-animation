@@ -41,17 +41,26 @@ func countRunesInLine(lineString string) (int, error) {
 	return runeCount, nil
 }
 
-// Calculate the positoin after adding newText
+// Calculate the position offset by text
+//
+//  1. If single line
+//     text = "abcde", then offset pos = Position{ Line: current line, Char: current char + 5 }
+//     --------12345
+//
+//  2. If multi line
+//     text = "\n\nabcde", then offset pos = Position{ Line: current line + 2, Char: 5 }
+//     ------------12345
+//
 // newText may contain '\n'
-func positionAfterAdd(currentPos Position, newText string) (Position, error) {
-	linesToAdd := strings.Split(newText, "\n")
+func offsetPosition(currentPos Position, text string) (Position, error) {
+	lines := strings.Split(text, "\n")
 
-	if len(linesToAdd) == 1 {
-		// 1. If single line nexText
-		line := linesToAdd[0]
+	if len(lines) == 1 {
+		// 1. If single line text
+		line := lines[0]
 		runeCount, err := countRunesInLine(line)
 		if err != nil {
-			return Position{}, fmt.Errorf("failed to calculate new position after add %s", err)
+			return Position{}, fmt.Errorf("failed to calculate position offset, %s", err)
 		}
 
 		return Position{
@@ -60,16 +69,16 @@ func positionAfterAdd(currentPos Position, newText string) (Position, error) {
 		}, nil
 
 	} else {
-		// 2. If multi-line nexText
-		lastLine := linesToAdd[len(linesToAdd)-1]
+		// 2. If multi-line text
+		lastLine := lines[len(lines)-1]
 
 		runeCount, err := countRunesInLine(lastLine)
 		if err != nil {
-			return Position{}, fmt.Errorf("failed to calculate new position after add %s", err)
+			return Position{}, fmt.Errorf("failed to calculate position offset, %s", err)
 		}
 
 		return Position{
-			Line:      currentPos.Line + len(linesToAdd) - 1,
+			Line:      currentPos.Line + len(lines) - 1,
 			Character: runeCount,
 		}, nil
 	}
@@ -155,29 +164,22 @@ func addWordByWord(currentPos Position, lineString string) ([]EditInsert, error)
 }
 
 func diffToEdit(currentPos Position, diff Diff) (Edit, Position, error) {
+	offsetPos, err := offsetPosition(currentPos, diff.Text)
+	if err != nil {
+		return EditInsert{}, Position{}, err
+	}
+
 	switch diff.Type {
 	case DiffInsert:
-		afterPos, err := positionAfterAdd(currentPos, diff.Text)
-		if err != nil {
-			return EditInsert{}, Position{}, err
-		}
-		return EditInsert{diff.Text, currentPos}, afterPos, nil
+		return EditInsert{diff.Text, currentPos}, offsetPos, nil
 
 	case DiffEqual:
-		afterPos, err := positionAfterAdd(currentPos, diff.Text)
-		if err != nil {
-			return EditInsert{}, Position{}, err
-		}
-		return nil, afterPos, nil
+		return nil, offsetPos, nil
 
 	case DiffDelete:
-		afterPos, err := positionAfterAdd(currentPos, diff.Text)
-		if err != nil {
-			return EditInsert{}, Position{}, err
-		}
-		return EditDelete{Range{Start: currentPos, End: afterPos}}, currentPos, nil
+		return EditDelete{Range{Start: currentPos, End: offsetPos}}, currentPos, nil
 
 	default:
-		return EditInsert{}, Position{}, fmt.Errorf("diff type = %d is invalid", diff.Type)
+		return nil, Position{}, fmt.Errorf("diff type = %d is invalid", diff.Type)
 	}
 }

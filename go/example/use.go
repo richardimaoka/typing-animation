@@ -48,7 +48,6 @@ func buildStack(diffs []diffmatchpatch.Diff) *vscode.EditStack {
 	stack := vscode.NewEditStack()
 
 	for _, d := range diffs {
-
 		switch d.Type {
 		case diffmatchpatch.DiffDelete:
 			stack.AppendDelete(d.Text)
@@ -61,7 +60,7 @@ func buildStack(diffs []diffmatchpatch.Diff) *vscode.EditStack {
 		}
 	}
 
-	return nil
+	return stack
 }
 
 func Experiment() {
@@ -95,7 +94,11 @@ func ExperimentFiles() {
 	}()
 
 	dmp := diffmatchpatch.New()
-	diffs := dmp.DiffMain(string(before), string(after), true)
+	diffs := dmp.DiffMain(string(before), string(after), false)
+
+	for i, d := range diffs {
+		fmt.Printf("[%2d]:type = %s, text = '%s'\n", i, d.Type.String(), d.Text)
+	}
 
 	stack := buildStack(diffs)
 	edits, err := stack.CalcEdits()
@@ -106,6 +109,5 @@ func ExperimentFiles() {
 	for _, e := range edits {
 		e.Apply(resultFile)
 		time.Sleep(300 * time.Millisecond)
-
 	}
 }
