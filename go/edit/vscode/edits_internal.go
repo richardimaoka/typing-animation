@@ -6,7 +6,7 @@ import (
 	"unicode/utf8"
 )
 
-// Return edits, split by char, to add line from currentPos
+// Return edits, split by char, to add a line from currentPos
 // line should not contain \'\n'
 //
 // If line contains '\n', this returns an error
@@ -53,7 +53,7 @@ func addCharByChar(currentPos Position, line string) ([]Edit, error) {
 //
 // If line contains '\n', this returns an error
 // If line is empty, this should return the count of zero
-func deleteCharByChar(currentPos Position, line string) ([]Edit, error) {
+func deleteCharByChar(startPos Position, line string) ([]Edit, error) {
 	if len(line) == 0 {
 		return nil, nil
 	}
@@ -78,11 +78,12 @@ func deleteCharByChar(currentPos Position, line string) ([]Edit, error) {
 
 		edits = append(edits,
 			EditDelete{
+				DeleteText: string(r),
 				DeleteRange: Range{
-					Start: currentPos,
+					Start: startPos,
 					End: Position{
-						Line:      currentPos.Line,
-						Character: currentPos.Character + 1,
+						Line:      startPos.Line,
+						Character: startPos.Character + 1,
 					},
 				},
 			},
@@ -149,6 +150,7 @@ func deleteWordByWord(currentPos Position, lineString string) ([]Edit, error) {
 
 		edits = append(edits,
 			EditDelete{
+				DeleteText: word,
 				DeleteRange: Range{
 					Start: currentPos,
 					End: Position{
