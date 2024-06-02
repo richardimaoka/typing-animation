@@ -6,10 +6,6 @@ import (
 	"unicode/utf8"
 )
 
-func (e EditDelete) StartPos() Position {
-	return e.DeleteRange.Start
-}
-
 // Return edits, split by char, to add line from currentPos
 // line should not contain \'\n'
 //
@@ -226,23 +222,23 @@ func splitInsertByWord(insert EditInsert) ([]Edit, error) {
 	return edits, nil
 }
 
-// func splitDeleteByWord(delete EditDelete) ([]Edit, error) {
-// 	pos := delete.Position
-// 	lines := strings.Split(delete.NewText, "\n")
+func splitDeleteByWord(delete EditDelete) ([]Edit, error) {
+	pos := delete.DeleteRange.Start
+	lines := strings.Split(delete.DeleteText, "\n")
 
-// 	var edits []Edit
-// 	for _, l := range lines {
-// 		lineEdits, err := addWordByWord(pos, l)
-// 		if err != nil {
-// 			return nil, err
-// 		}
+	var edits []Edit
+	for _, l := range lines {
+		lineEdits, err := deleteWordByWord(pos, l)
+		if err != nil {
+			return nil, err
+		}
 
-// 		edits = append(edits, lineEdits...)
-// 		pos = Position{Line: pos.Line + 1, Character: 0}
-// 	}
+		edits = append(edits, lineEdits...)
+		pos = Position{Line: pos.Line + 1, Character: 0}
+	}
 
-// 	return edits, nil
-// }
+	return edits, nil
+}
 
 func splitInsertByChar(insert EditInsert) ([]Edit, error) {
 	pos := insert.Position
@@ -263,7 +259,7 @@ func splitInsertByChar(insert EditInsert) ([]Edit, error) {
 }
 
 func splitDeleteByChar(delete EditDelete) ([]Edit, error) {
-	pos := delete.StartPos()
+	pos := delete.DeleteRange.Start
 	lines := strings.Split(delete.DeleteText, "\n")
 
 	var edits []Edit

@@ -21,8 +21,19 @@ type EditInsert struct {
 }
 
 type EditDelete struct {
-	DeleteText  string
+	DeleteText  string // DeleteText is necessary for word-by-word split, and char-by-char split
 	DeleteRange Range
+
+	// Theoretically, below also works:
+	//
+	//   EditDelete struct {
+	//     DeleteText string
+	//     StartPos   Position
+	//   }
+	//
+	// However, it requires calculation of end position on the fly,
+	// which can result in error. (at least from type signature perspective)
+	// So, better to store the entire Range instead.
 }
 
 func (e EditInsert) Apply(filename string) error {
@@ -50,8 +61,8 @@ func (e EditDelete) Split(strategy EditSplitStrategy) ([]Edit, error) {
 	switch strategy {
 	case SplitByLine:
 		return splitDeleteByLine(e)
-	// case SplitByWord:
-	// 	return splitDeleteByWord(e)
+	case SplitByWord:
+		return splitDeleteByWord(e)
 	case SplitByChar:
 		return splitDeleteByChar(e)
 	default:
