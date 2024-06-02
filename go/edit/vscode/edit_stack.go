@@ -37,7 +37,12 @@ func (s *EditStack) CalcEdits() ([]Edit, error) {
 			continue
 		}
 
+		// if split
+		// editsForDiff = edit.Split()
+		// edits = append(editsForDiff...)
+		// else
 		edits = append(edits, edit)
+
 		pos = newPos
 	}
 

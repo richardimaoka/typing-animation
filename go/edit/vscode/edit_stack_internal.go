@@ -93,14 +93,14 @@ func offsetPosition(currentPos Position, text string) (Position, error) {
 //
 // If line contains '\n', this returns an error
 // If line is empty, this should return the count of zero
-func addCharByChar(currentPos Position, line string) ([]EditInsert, error) {
+func addCharByChar(currentPos Position, line string) ([]Edit, error) {
 	if len(line) == 0 {
-		return []EditInsert{}, nil
+		return nil, nil
 	}
 
 	lineBytes := []byte(line)
 
-	edits := []EditInsert{}
+	edits := []Edit{}
 	byteOffset := 0
 	for c := 0; ; c++ {
 		r, size := utf8.DecodeRune(lineBytes[byteOffset:])
@@ -135,16 +135,16 @@ func addCharByChar(currentPos Position, line string) ([]EditInsert, error) {
 //
 // If line contains '\n', this returns an error
 // If line is empty, this should return the count of zero
-func addWordByWord(currentPos Position, lineString string) ([]EditInsert, error) {
+func addWordByWord(currentPos Position, lineString string) ([]Edit, error) {
 	pos := currentPos
 
 	if len(lineString) == 0 {
-		return []EditInsert{}, nil
+		return nil, nil
 	}
 
 	lineWords := strings.SplitAfter(lineString, " ")
 
-	edits := []EditInsert{}
+	edits := []Edit{}
 	for _, word := range lineWords {
 		edits = append(edits,
 			EditInsert{
@@ -184,4 +184,53 @@ func diffToEdit(currentPos Position, diff Diff) (Edit, Position, error) {
 	default:
 		return nil, Position{}, fmt.Errorf("diff type = %d is invalid", diff.Type)
 	}
+}
+
+func splitInsertByLine(insert EditInsert) ([]Edit, error) {
+	pos := insert.Position
+	lines := strings.Split(insert.NewText, "\n")
+
+	var edits []Edit
+	for _, l := range lines {
+		edits = append(edits, EditInsert{Position: pos, NewText: l})
+		pos = Position{Line: pos.Line + 1, Character: 0}
+	}
+
+	return edits, nil
+}
+
+func splitInsertByWord(insert EditInsert) ([]Edit, error) {
+	pos := insert.Position
+	lines := strings.Split(insert.NewText, "\n")
+
+	var edits []Edit
+	for _, l := range lines {
+		lineEdits, err := addWordByWord(pos, l)
+		if err != nil {
+			return nil, err
+		}
+
+		edits = append(edits, lineEdits...)
+		pos = Position{Line: pos.Line + 1, Character: 0}
+	}
+
+	return edits, nil
+}
+
+func splitInsertByChar(insert EditInsert) ([]Edit, error) {
+	pos := insert.Position
+	lines := strings.Split(insert.NewText, "\n")
+
+	var edits []Edit
+	for _, l := range lines {
+		lineEdits, err := addCharByChar(pos, l)
+		if err != nil {
+			return nil, err
+		}
+
+		edits = append(edits, lineEdits...)
+		pos = Position{Line: pos.Line + 1, Character: 0}
+	}
+
+	return edits, nil
 }
