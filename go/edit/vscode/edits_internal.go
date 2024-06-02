@@ -6,6 +6,10 @@ import (
 	"unicode/utf8"
 )
 
+func (e EditDelete) StartPos() Position {
+	return e.DeleteRange.Start
+}
+
 // Return edits, split by char, to add line from currentPos
 // line should not contain \'\n'
 //
@@ -258,20 +262,20 @@ func splitInsertByChar(insert EditInsert) ([]Edit, error) {
 	return edits, nil
 }
 
-// func splitDeleteByChar(insert EditDelete) ([]Edit, error) {
-// 	pos := insert.Position
-// 	lines := strings.Split(insert.NewText, "\n")
+func splitDeleteByChar(delete EditDelete) ([]Edit, error) {
+	pos := delete.StartPos()
+	lines := strings.Split(delete.DeleteText, "\n")
 
-// 	var edits []Edit
-// 	for _, l := range lines {
-// 		lineEdits, err := addCharByChar(pos, l)
-// 		if err != nil {
-// 			return nil, err
-// 		}
+	var edits []Edit
+	for _, l := range lines {
+		lineEdits, err := deleteCharByChar(pos, l)
+		if err != nil {
+			return nil, err
+		}
 
-// 		edits = append(edits, lineEdits...)
-// 		pos = Position{Line: pos.Line + 1, Character: 0}
-// 	}
+		edits = append(edits, lineEdits...)
+		pos = Position{Line: pos.Line + 1, Character: 0}
+	}
 
-// 	return edits, nil
-// }
+	return edits, nil
+}

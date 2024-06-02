@@ -52,8 +52,8 @@ func (e EditDelete) Split(strategy EditSplitStrategy) ([]Edit, error) {
 		return splitDeleteByLine(e)
 	// case SplitByWord:
 	// 	return splitDeleteByWord(e)
-	// case SplitByChar:
-	// 	return splitDeleteByChar(e)
+	case SplitByChar:
+		return splitDeleteByChar(e)
 	default:
 		return nil, nil
 	}
