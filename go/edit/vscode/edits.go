@@ -57,8 +57,12 @@ func (e EditInsert) Split(strategy EditSplitStrategy) ([]Edit, error) {
 
 func (e EditDelete) Split(strategy EditSplitStrategy) ([]Edit, error) {
 	switch strategy {
-	// case SplitByLine:
-	// 	return splitInsertByLine(e)
+	case SplitByLine:
+		return splitDeleteByLine(e)
+	// case SplitByWord:
+	// 	return splitDeleteByWord(e)
+	// case SplitByChar:
+	// 	return splitDeleteByChar(e)
 	default:
 		return nil, nil
 	}
