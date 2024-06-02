@@ -164,20 +164,22 @@ func addWordByWord(currentPos Position, lineString string) ([]EditInsert, error)
 }
 
 func diffToEdit(currentPos Position, diff Diff) (Edit, Position, error) {
-	offsetPos, err := offsetPosition(currentPos, diff.Text)
+	// regardless of diff type, edit end position is same
+	editEndPos, err := offsetPosition(currentPos, diff.Text)
 	if err != nil {
 		return EditInsert{}, Position{}, err
 	}
 
 	switch diff.Type {
 	case DiffInsert:
-		return EditInsert{diff.Text, currentPos}, offsetPos, nil
+		return EditInsert{diff.Text, currentPos}, editEndPos, nil
 
 	case DiffEqual:
-		return nil, offsetPos, nil
+		return nil, editEndPos, nil
 
 	case DiffDelete:
-		return EditDelete{Range{Start: currentPos, End: offsetPos}}, currentPos, nil
+		// Return the original currentPos, because the cursor doesn't move after deletion
+		return EditDelete{Range{Start: currentPos, End: editEndPos}}, currentPos, nil
 
 	default:
 		return nil, Position{}, fmt.Errorf("diff type = %d is invalid", diff.Type)

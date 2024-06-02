@@ -25,23 +25,20 @@ func (s *EditStack) AppendInsert(text string) {
 }
 
 func (s *EditStack) CalcEdits() ([]Edit, error) {
+	pos := Position{0, 0}
 	edits := []Edit{}
 
-	pos := Position{0, 0}
-	var edit Edit = nil
-	var err error
-
 	for _, diff := range s.diffs {
-		edit, pos, err = diffToEdit(pos, diff)
+		edit, newPos, err := diffToEdit(pos, diff)
 		if err != nil {
 			return nil, err
 		}
-
 		if edit == nil {
 			continue
 		}
 
 		edits = append(edits, edit)
+		pos = newPos
 	}
 
 	return edits, nil
