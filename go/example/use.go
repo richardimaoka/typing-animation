@@ -97,26 +97,15 @@ func ExperimentFiles() {
 	dmp := diffmatchpatch.New()
 	diffs := dmp.DiffMain(string(before), string(after), true)
 
-	buildStack(diffs)
+	stack := buildStack(diffs)
+	edits, err := stack.CalcEdits()
+	if err != nil {
+		panic(err)
+	}
 
-	vscode.Insert(resultFile, vscode.Position{Line: 1, Character: 2}, "abcdefg1235998")
-	time.Sleep(300 * time.Millisecond)
-	vscode.Insert(resultFile, vscode.Position{Line: 1, Character: 2}, "abcdefg1235998")
-	time.Sleep(300 * time.Millisecond)
-	vscode.Insert(resultFile, vscode.Position{Line: 1, Character: 2}, "abcdefg1235998")
-	time.Sleep(300 * time.Millisecond)
-	vscode.Insert(resultFile, vscode.Position{Line: 1, Character: 2}, "abcdefg1235998")
-	time.Sleep(300 * time.Millisecond)
-	time.Sleep(300 * time.Millisecond)
-	time.Sleep(300 * time.Millisecond)
-	vscode.Insert(resultFile, vscode.Position{Line: 1, Character: 2}, "abcdefg1235998")
-	time.Sleep(300 * time.Millisecond)
-	vscode.Insert(resultFile, vscode.Position{Line: 1, Character: 2}, "abcdefg1235998")
-	time.Sleep(300 * time.Millisecond)
-	vscode.Insert(resultFile, vscode.Position{Line: 1, Character: 2}, "abcdefg1235998")
-	time.Sleep(300 * time.Millisecond)
-	vscode.Insert(resultFile, vscode.Position{Line: 1, Character: 2}, "abcdefg1235998")
-	time.Sleep(300 * time.Millisecond)
-	vscode.Insert(resultFile, vscode.Position{Line: 1, Character: 2}, "abcdefg1235998")
+	for _, e := range edits {
+		e.Apply(resultFile)
+		time.Sleep(300 * time.Millisecond)
 
+	}
 }

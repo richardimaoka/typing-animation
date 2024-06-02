@@ -42,10 +42,12 @@ func countRunesInLine(lineString string) (int, error) {
 }
 
 // Calculate the positoin after adding newText
+// newText may contain '\n'
 func positionAfterAdd(currentPos Position, newText string) (Position, error) {
 	linesToAdd := strings.Split(newText, "\n")
 
 	if len(linesToAdd) == 1 {
+		// 1. If single line nexText
 		line := linesToAdd[0]
 		runeCount, err := countRunesInLine(line)
 		if err != nil {
@@ -58,6 +60,7 @@ func positionAfterAdd(currentPos Position, newText string) (Position, error) {
 		}, nil
 
 	} else {
+		// 2. If multi-line nexText
 		lastLine := linesToAdd[len(linesToAdd)-1]
 
 		runeCount, err := countRunesInLine(lastLine)
@@ -149,4 +152,32 @@ func addWordByWord(currentPos Position, lineString string) ([]EditInsert, error)
 	}
 
 	return edits, nil
+}
+
+func diffToEdit(currentPos Position, diff Diff) (Edit, Position, error) {
+	switch diff.Type {
+	case DiffInsert:
+		afterPos, err := positionAfterAdd(currentPos, diff.Text)
+		if err != nil {
+			return EditInsert{}, Position{}, err
+		}
+		return EditInsert{diff.Text, currentPos}, afterPos, nil
+
+	case DiffEqual:
+		afterPos, err := positionAfterAdd(currentPos, diff.Text)
+		if err != nil {
+			return EditInsert{}, Position{}, err
+		}
+		return nil, afterPos, nil
+
+	case DiffDelete:
+		afterPos, err := positionAfterAdd(currentPos, diff.Text)
+		if err != nil {
+			return EditInsert{}, Position{}, err
+		}
+		return EditDelete{Range{Start: currentPos, End: afterPos}}, currentPos, nil
+
+	default:
+		return EditInsert{}, Position{}, fmt.Errorf("diff type = %d is invalid", diff.Type)
+	}
 }

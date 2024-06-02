@@ -15,7 +15,3 @@ type Diff struct {
 	Type DiffOperation
 	Text string
 }
-
-func (d Diff) RawEdit() Edit {
-	return nil
-}
