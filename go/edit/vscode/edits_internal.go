@@ -30,7 +30,7 @@ func addCharByChar(currentPos Position, line string) ([]Edit, error) {
 	for c := 0; ; c++ {
 		r, size := utf8.DecodeRune(lineBytes[byteOffset:])
 		if r == '\n' {
-			return nil, errors.New("encountered new-line")
+			return nil, errors.New("encountered new-line in the middle")
 		}
 		if r == utf8.RuneError {
 			if size == 0 {
@@ -56,23 +56,24 @@ func addCharByChar(currentPos Position, line string) ([]Edit, error) {
 }
 
 // Return edits, split by char, to delete line from currentPos
-// line should not contain \'\n'
+// line may only contain '\n' at the end, but not in the middle
 //
-// If line contains '\n', this returns an error
+// If line contains '\n' in the middle, this returns an error
 // If line is empty, this should return the count of zero
 func deleteCharByChar(startPos Position, line string) ([]Edit, error) {
 	if len(line) == 0 {
 		return nil, nil
 	}
 
+	edits := []Edit{}
+
 	lineBytes := []byte(line)
 
-	edits := []Edit{}
 	byteOffset := 0
 	for c := 0; ; c++ {
 		r, size := utf8.DecodeRune(lineBytes[byteOffset:])
-		if r == '\n' {
-			return nil, errors.New("encountered new-line")
+		if r == '\n' && byteOffset != len(lineBytes)-1 {
+			return nil, errors.New("encountered new-line in the middle")
 		}
 		if r == utf8.RuneError {
 			if size == 0 {

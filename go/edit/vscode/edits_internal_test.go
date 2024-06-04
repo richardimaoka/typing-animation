@@ -99,7 +99,16 @@ func TestDeleteCharByChar(t *testing.T) {
 				EditDelete{DeleteText: "c", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 11}}},
 			},
 			false},
-		"ERROR: new line at the end":    {"0123456789\n", Position{Line: 3, Character: 10}, nil, true},
+		"new line at the en": {
+			"abc\n",
+			Position{Line: 3, Character: 10},
+			[]Edit{
+				EditDelete{DeleteText: "a", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 11}}},
+				EditDelete{DeleteText: "b", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 11}}},
+				EditDelete{DeleteText: "c", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 11}}},
+				EditDelete{DeleteText: "\n", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 11}}},
+			},
+			false},
 		"ERROR: new line in the middle": {"0123456789\n012三四", Position{Line: 3, Character: 10}, nil, true},
 	}
 
