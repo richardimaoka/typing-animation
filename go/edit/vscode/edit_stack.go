@@ -33,15 +33,14 @@ func (s *EditStack) CalcEdits() ([]Edit, error) {
 		if err != nil {
 			return nil, err
 		}
-		if edit == nil {
-			continue
-		}
 
 		// if split
 		// editsForDiff = edit.Split()
 		// edits = append(editsForDiff...)
 		// else
-		edits = append(edits, edit)
+		if edit != nil {
+			edits = append(edits, edit)
+		}
 
 		pos = newPos
 	}

@@ -35,7 +35,16 @@ func TestAddCharByChar(t *testing.T) {
 				EditInsert{NewText: "c", Position: Position{Line: 3, Character: 14}},
 			},
 			false},
-		"ERROR: new line at the end":    {"0123456789\n", Position{Line: 3, Character: 10}, nil, true},
+		"new line at the end": {
+			"abc\n",
+			Position{Line: 3, Character: 10},
+			[]Edit{
+				EditInsert{NewText: "\n", Position: Position{Line: 3, Character: 10}},
+				EditInsert{NewText: "a", Position: Position{Line: 3, Character: 10}},
+				EditInsert{NewText: "b", Position: Position{Line: 3, Character: 11}},
+				EditInsert{NewText: "c", Position: Position{Line: 3, Character: 12}},
+			},
+			false},
 		"ERROR: new line in the middle": {"0123456789\n012三四", Position{Line: 3, Character: 10}, nil, true},
 	}
 
@@ -223,3 +232,43 @@ func TestDeleteWordByWord(t *testing.T) {
 		})
 	}
 }
+
+// func TestSplitInsertByWord(t *testing.T) {
+// 	cases := map[string]struct {
+// 		edit     EditInsert
+// 		expected []Edit
+// 		err      bool
+// 	}{
+// 		"this is a text.": {
+// 			EditInsert{NewText: "abc def\nghi\njk", Position: Position{Line: 3, Character: 10}},
+// 			[]Edit{
+// 				// \n should be added first
+// 				EditInsert{NewText: "\n", Position: Position{Line: 3, Character: 10}},
+// 				EditInsert{NewText: "abc ", Position: Position{Line: 3, Character: 10}},
+// 				EditInsert{NewText: "def", Position: Position{Line: 3, Character: 14}},
+// 			},
+// 			false,
+// 		},
+// 	}
+
+// 	for name, c := range cases {
+// 		t.Run(name, func(t *testing.T) {
+// 			result, err := splitInsertByWord(c.edit)
+// 			if err != nil {
+// 				if c.err {
+// 					return // expected error
+// 				}
+// 				t.Fatalf("unexpected error: %s", err)
+// 			}
+
+// 			if c.err {
+// 				t.Fatalf("Expected error: but succeeded with result = %+v", result)
+// 			}
+
+// 			diff := cmp.Diff(c.expected, result)
+// 			if len(diff) > 0 {
+// 				t.Errorf("%s", diff)
+// 			}
+// 		})
+// 	}
+// }

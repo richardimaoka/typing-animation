@@ -7,18 +7,25 @@ import (
 )
 
 // Return edits, split by char, to add a line from currentPos
-// line should not contain \'\n'
+// line may only contain '\n' at the end, but not in the middle
 //
-// If line contains '\n', this returns an error
+// If line contains '\n' in the middle, this returns an error
 // If line is empty, this should return the count of zero
 func addCharByChar(currentPos Position, line string) ([]Edit, error) {
 	if len(line) == 0 {
 		return nil, nil
 	}
 
-	lineBytes := []byte(line)
-
 	edits := []Edit{}
+
+	// If line ends in '\n', add '\n' first otherwise the typing animation looks unnatural
+	lineWithoutNL, hasNewLine := strings.CutSuffix(line, "\n")
+	if hasNewLine {
+		edits = append(edits, EditInsert{Position: currentPos, NewText: "\n"})
+	}
+
+	lineBytes := []byte(lineWithoutNL)
+
 	byteOffset := 0
 	for c := 0; ; c++ {
 		r, size := utf8.DecodeRune(lineBytes[byteOffset:])
@@ -244,7 +251,7 @@ func splitDeleteByWord(delete EditDelete) ([]Edit, error) {
 
 func splitInsertByChar(insert EditInsert) ([]Edit, error) {
 	pos := insert.Position
-	lines := strings.Split(insert.NewText, "\n")
+	lines := strings.SplitAfter(insert.NewText, "\n")
 
 	var edits []Edit
 	for _, l := range lines {
