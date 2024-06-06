@@ -230,7 +230,17 @@ func TestDeleteWordByWord(t *testing.T) {
 				EditDelete{DeleteText: "spacing", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 17}}},
 			},
 			false},
-		"ERROR: new line at the end":    {"0123456789\n", Position{Line: 3, Character: 10}, nil, true},
+		"new line at the end": {
+			"this is a text.\n",
+			Position{Line: 3, Character: 10},
+			[]Edit{
+				EditDelete{DeleteText: "this ", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 15}}},
+				EditDelete{DeleteText: "is ", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 13}}},
+				EditDelete{DeleteText: "a ", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 12}}},
+				EditDelete{DeleteText: "text.", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 15}}},
+				EditDelete{DeleteText: "\n", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 11}}},
+			},
+			false},
 		"ERROR: new line in the middle": {"0123456789\n012三四", Position{Line: 3, Character: 10}, nil, true},
 	}
 
