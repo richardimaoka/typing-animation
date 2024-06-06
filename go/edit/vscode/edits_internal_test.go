@@ -373,3 +373,68 @@ func TestSplitDeletetByLine(t *testing.T) {
 		})
 	}
 }
+
+func TestSplitDeletetByWord(t *testing.T) {
+	cases := map[string]struct {
+		edit     EditDelete
+		expected []Edit
+		err      bool
+	}{
+		"single line, single word": {
+			EditDelete{DeleteText: "123456789", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 19}}},
+			[]Edit{
+				EditDelete{DeleteText: "123456789", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 19}}},
+			},
+			false,
+		},
+		"single line, multi words": {
+			EditDelete{DeleteText: "123 456 789", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 21}}},
+			[]Edit{
+				EditDelete{DeleteText: "123 ", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 14}}},
+				EditDelete{DeleteText: "456 ", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 14}}},
+				EditDelete{DeleteText: "789", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 13}}},
+			},
+			false,
+		},
+		// `single line, ends in \n`: {
+		// 	EditDelete{DeleteText: "123 456 789\n", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 4, Character: 0}}},
+		// 	[]Edit{
+		// 		EditDelete{DeleteText: "123 ", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 14}}},
+		// 		EditDelete{DeleteText: "456 ", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 14}}},
+		// 		EditDelete{DeleteText: "789\n", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 4, Character: 0}}},
+		// 	},
+		// 	false,
+		// },
+		// `consecutive\n`: {
+		// 	EditDelete{DeleteText: "123456\n\n\n789\n", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 7, Character: 0}}},
+		// 	[]Edit{
+		// 		EditDelete{DeleteText: "123456\n", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 4, Character: 0}}},
+		// 		EditDelete{DeleteText: "\n", DeleteRange: Range{Start: Position{Line: 4, Character: 0}, End: Position{Line: 5, Character: 0}}},
+		// 		EditDelete{DeleteText: "\n", DeleteRange: Range{Start: Position{Line: 5, Character: 0}, End: Position{Line: 6, Character: 0}}},
+		// 		EditDelete{DeleteText: "789\n", DeleteRange: Range{Start: Position{Line: 6, Character: 0}, End: Position{Line: 7, Character: 0}}},
+		// 	},
+		// 	false,
+		// },
+	}
+
+	for name, c := range cases {
+		t.Run(name, func(t *testing.T) {
+			result, err := splitDeleteByWord(c.edit)
+			if err != nil {
+				if c.err {
+					return // expected error
+				}
+				t.Fatalf("unexpected error: %s", err)
+			}
+
+			if c.err {
+				t.Fatalf("Expected error: but succeeded with result = %+v", result)
+			}
+
+			diff := cmp.Diff(c.expected, result)
+			if len(diff) > 0 {
+				t.Errorf("%s", diff)
+			}
+		})
+	}
+}
