@@ -124,6 +124,10 @@ func insertLineByWord(currentPos Position, line string) ([]Edit, error) {
 
 	pos := currentPos
 	for _, word := range lineWords {
+		if word == "" {
+			continue
+		}
+
 		edits = append(edits,
 			EditInsert{
 				NewText:  word,
@@ -149,14 +153,24 @@ func insertLineByWord(currentPos Position, line string) ([]Edit, error) {
 func deleteLineByWord(currentPos Position, line string) ([]Edit, error) {
 	if len(line) == 0 {
 		return nil, nil
+	} else if line == "\n" {
+		return []Edit{EditDelete{
+			DeleteText:  "\n",
+			DeleteRange: Range{Start: currentPos, End: Position{Line: currentPos.Line + 1, Character: 0}},
+		}}, nil
 	}
 
 	edits := []Edit{}
 
+	// Necessary to cut the last '\n', since countRunesInLine() expects no '\n' in the line
 	lineWithoutNL, hasNewLine := strings.CutSuffix(line, "\n")
 	lineWords := strings.SplitAfter(lineWithoutNL, " ")
 
 	for _, word := range lineWords {
+		if word == "" {
+			continue
+		}
+
 		c, err := countRunesInLine(word)
 		if err != nil {
 			return nil, err
@@ -182,8 +196,8 @@ func deleteLineByWord(currentPos Position, line string) ([]Edit, error) {
 			DeleteRange: Range{
 				Start: currentPos,
 				End: Position{
-					Line:      currentPos.Line,
-					Character: currentPos.Character + 1,
+					Line:      currentPos.Line + 1,
+					Character: 0,
 				},
 			},
 		})
@@ -248,7 +262,7 @@ func splitDeleteByLine(delete EditDelete) ([]Edit, error) {
 
 func splitInsertByWord(insert EditInsert) ([]Edit, error) {
 	pos := insert.Position
-	lines := strings.Split(insert.NewText, "\n")
+	lines := strings.SplitAfter(insert.NewText, "\n")
 
 	var edits []Edit
 	for _, l := range lines {
@@ -265,18 +279,17 @@ func splitInsertByWord(insert EditInsert) ([]Edit, error) {
 }
 
 func splitDeleteByWord(delete EditDelete) ([]Edit, error) {
-	pos := delete.DeleteRange.Start
-	lines := strings.Split(delete.DeleteText, "\n")
+	stratPos := delete.DeleteRange.Start
+	lines := strings.SplitAfter(delete.DeleteText, "\n")
 
 	var edits []Edit
 	for _, l := range lines {
-		lineEdits, err := deleteLineByWord(pos, l)
+		lineEdits, err := deleteLineByWord(stratPos, l)
 		if err != nil {
 			return nil, err
 		}
 
 		edits = append(edits, lineEdits...)
-		pos = Position{Line: pos.Line + 1, Character: 0}
 	}
 
 	return edits, nil

@@ -164,6 +164,19 @@ func TestInsertLineByWord(t *testing.T) {
 				EditInsert{NewText: "spacing", Position: Position{Line: 3, Character: 30}},
 			},
 			false},
+		"text ends in weird spaces": {
+			"text ends in weird spaces   ",
+			Position{Line: 3, Character: 10},
+			[]Edit{
+				EditInsert{NewText: "text ", Position: Position{Line: 3, Character: 10}},
+				EditInsert{NewText: "ends ", Position: Position{Line: 3, Character: 15}},
+				EditInsert{NewText: "in ", Position: Position{Line: 3, Character: 20}},
+				EditInsert{NewText: "weird ", Position: Position{Line: 3, Character: 23}},
+				EditInsert{NewText: "spaces ", Position: Position{Line: 3, Character: 29}},
+				EditInsert{NewText: " ", Position: Position{Line: 3, Character: 36}},
+				EditInsert{NewText: " ", Position: Position{Line: 3, Character: 37}},
+			},
+			false},
 		"new line at the end": {
 			"this is a text.\n",
 			Position{Line: 3, Character: 10},
@@ -230,6 +243,19 @@ func TestDeleteLineByWord(t *testing.T) {
 				EditDelete{DeleteText: "spacing", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 17}}},
 			},
 			false},
+		"text ends in weird spaces": {
+			"text ends in weird spaces   ",
+			Position{Line: 3, Character: 10},
+			[]Edit{
+				EditDelete{DeleteText: "text ", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 15}}},
+				EditDelete{DeleteText: "ends ", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 15}}},
+				EditDelete{DeleteText: "in ", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 13}}},
+				EditDelete{DeleteText: "weird ", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 16}}},
+				EditDelete{DeleteText: "spaces ", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 17}}},
+				EditDelete{DeleteText: " ", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 11}}},
+				EditDelete{DeleteText: " ", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 11}}},
+			},
+			false},
 		"new line at the end": {
 			"this is a text.\n",
 			Position{Line: 3, Character: 10},
@@ -238,7 +264,7 @@ func TestDeleteLineByWord(t *testing.T) {
 				EditDelete{DeleteText: "is ", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 13}}},
 				EditDelete{DeleteText: "a ", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 12}}},
 				EditDelete{DeleteText: "text.", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 15}}},
-				EditDelete{DeleteText: "\n", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 11}}},
+				EditDelete{DeleteText: "\n", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 4, Character: 0}}},
 			},
 			false},
 		"ERROR: new line in the middle": {"0123456789\n012三四", Position{Line: 3, Character: 10}, nil, true},
@@ -374,6 +400,88 @@ func TestSplitDeletetByLine(t *testing.T) {
 	}
 }
 
+func TestSplitInsertByWord(t *testing.T) {
+	cases := map[string]struct {
+		edit     EditInsert
+		expected []Edit
+		err      bool
+	}{
+		"single line, single word": {
+			EditInsert{NewText: "123456789", Position: Position{Line: 3, Character: 10}},
+			[]Edit{
+				EditInsert{NewText: "123456789", Position: Position{Line: 3, Character: 10}},
+			},
+			false,
+		},
+		"single line, multi words": {
+			EditInsert{NewText: "123 456 789", Position: Position{Line: 3, Character: 10}},
+			[]Edit{
+				EditInsert{NewText: "123 ", Position: Position{Line: 3, Character: 10}},
+				EditInsert{NewText: "456 ", Position: Position{Line: 3, Character: 14}},
+				EditInsert{NewText: "789", Position: Position{Line: 3, Character: 18}},
+			},
+			false,
+		},
+		`single line, ends in \n`: {
+			EditInsert{NewText: "123 456 789\n", Position: Position{Line: 3, Character: 10}},
+			[]Edit{
+				EditInsert{NewText: "\n", Position: Position{Line: 3, Character: 10}},
+				EditInsert{NewText: "123 ", Position: Position{Line: 3, Character: 10}},
+				EditInsert{NewText: "456 ", Position: Position{Line: 3, Character: 14}},
+				EditInsert{NewText: "789", Position: Position{Line: 3, Character: 18}},
+			},
+			false,
+		},
+		// `multi line, line-end with spaces`: {
+		// 	EditDelete{DeleteText: "123 456  \n 789 1234\n", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 4, Character: 0}}},
+		// 	[]Edit{
+		// 		EditDelete{DeleteText: "123 ", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 14}}},
+		// 		EditDelete{DeleteText: "456 ", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 14}}},
+		// 		EditDelete{DeleteText: " ", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 11}}},
+		// 		EditDelete{DeleteText: "\n", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 4, Character: 0}}},
+		// 		EditDelete{DeleteText: " ", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 11}}},
+		// 		EditDelete{DeleteText: "789 ", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 14}}},
+		// 		EditDelete{DeleteText: "1234", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 14}}},
+		// 		EditDelete{DeleteText: "\n", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 4, Character: 0}}},
+		// 	},
+		// 	false,
+		// },
+		// `consecutive\n`: {
+		// 	EditDelete{DeleteText: "123456\n\n\n789\n", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 7, Character: 0}}},
+		// 	[]Edit{
+		// 		EditDelete{DeleteText: "123456", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 16}}},
+		// 		EditDelete{DeleteText: "\n", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 4, Character: 0}}},
+		// 		EditDelete{DeleteText: "\n", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 4, Character: 0}}},
+		// 		EditDelete{DeleteText: "\n", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 4, Character: 0}}},
+		// 		EditDelete{DeleteText: "789", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 13}}},
+		// 		EditDelete{DeleteText: "\n", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 4, Character: 0}}},
+		// 	},
+		// 	false,
+		// },
+	}
+
+	for name, c := range cases {
+		t.Run(name, func(t *testing.T) {
+			result, err := splitInsertByWord(c.edit)
+			if err != nil {
+				if c.err {
+					return // expected error
+				}
+				t.Fatalf("unexpected error: %s", err)
+			}
+
+			if c.err {
+				t.Fatalf("Expected error: but succeeded with result = %+v", result)
+			}
+
+			diff := cmp.Diff(c.expected, result)
+			if len(diff) > 0 {
+				t.Errorf("%s", diff)
+			}
+		})
+	}
+}
+
 func TestSplitDeletetByWord(t *testing.T) {
 	cases := map[string]struct {
 		edit     EditDelete
@@ -396,25 +504,42 @@ func TestSplitDeletetByWord(t *testing.T) {
 			},
 			false,
 		},
-		// `single line, ends in \n`: {
-		// 	EditDelete{DeleteText: "123 456 789\n", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 4, Character: 0}}},
-		// 	[]Edit{
-		// 		EditDelete{DeleteText: "123 ", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 14}}},
-		// 		EditDelete{DeleteText: "456 ", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 14}}},
-		// 		EditDelete{DeleteText: "789\n", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 4, Character: 0}}},
-		// 	},
-		// 	false,
-		// },
-		// `consecutive\n`: {
-		// 	EditDelete{DeleteText: "123456\n\n\n789\n", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 7, Character: 0}}},
-		// 	[]Edit{
-		// 		EditDelete{DeleteText: "123456\n", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 4, Character: 0}}},
-		// 		EditDelete{DeleteText: "\n", DeleteRange: Range{Start: Position{Line: 4, Character: 0}, End: Position{Line: 5, Character: 0}}},
-		// 		EditDelete{DeleteText: "\n", DeleteRange: Range{Start: Position{Line: 5, Character: 0}, End: Position{Line: 6, Character: 0}}},
-		// 		EditDelete{DeleteText: "789\n", DeleteRange: Range{Start: Position{Line: 6, Character: 0}, End: Position{Line: 7, Character: 0}}},
-		// 	},
-		// 	false,
-		// },
+		`single line, ends in \n`: {
+			EditDelete{DeleteText: "123 456 789\n", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 4, Character: 0}}},
+			[]Edit{
+				EditDelete{DeleteText: "123 ", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 14}}},
+				EditDelete{DeleteText: "456 ", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 14}}},
+				EditDelete{DeleteText: "789", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 13}}},
+				EditDelete{DeleteText: "\n", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 4, Character: 0}}},
+			},
+			false,
+		},
+		`multi line, line-end with spaces`: {
+			EditDelete{DeleteText: "123 456  \n 789 1234\n", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 4, Character: 0}}},
+			[]Edit{
+				EditDelete{DeleteText: "123 ", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 14}}},
+				EditDelete{DeleteText: "456 ", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 14}}},
+				EditDelete{DeleteText: " ", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 11}}},
+				EditDelete{DeleteText: "\n", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 4, Character: 0}}},
+				EditDelete{DeleteText: " ", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 11}}},
+				EditDelete{DeleteText: "789 ", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 14}}},
+				EditDelete{DeleteText: "1234", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 14}}},
+				EditDelete{DeleteText: "\n", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 4, Character: 0}}},
+			},
+			false,
+		},
+		`consecutive\n`: {
+			EditDelete{DeleteText: "123456\n\n\n789\n", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 7, Character: 0}}},
+			[]Edit{
+				EditDelete{DeleteText: "123456", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 16}}},
+				EditDelete{DeleteText: "\n", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 4, Character: 0}}},
+				EditDelete{DeleteText: "\n", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 4, Character: 0}}},
+				EditDelete{DeleteText: "\n", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 4, Character: 0}}},
+				EditDelete{DeleteText: "789", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 13}}},
+				EditDelete{DeleteText: "\n", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 4, Character: 0}}},
+			},
+			false,
+		},
 	}
 
 	for name, c := range cases {
