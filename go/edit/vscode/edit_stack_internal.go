@@ -5,7 +5,8 @@ import (
 	"strings"
 )
 
-// Calculate the position offset by text
+// Calculate the edit's end position, offset by text
+// Regardless of edit type, either insert nor deletion, edit end position is same.
 //
 //  1. If single line
 //     text = "abcde", then offset pos = Position{ Line: current line, Char: current char + 5 }
@@ -16,7 +17,7 @@ import (
 //     ------------12345
 //
 // newText may contain '\n'
-func offsetPosition(currentPos Position, text string) (Position, error) {
+func editEndPosition(currentPos Position, text string) (Position, error) {
 	lines := strings.Split(text, "\n")
 
 	if len(lines) == 1 {
@@ -50,7 +51,7 @@ func offsetPosition(currentPos Position, text string) (Position, error) {
 
 func diffToEdit(currentPos Position, diff Diff) (Edit, Position, error) {
 	// regardless of diff type, edit end position is same
-	editEndPos, err := offsetPosition(currentPos, diff.Text)
+	editEndPos, err := editEndPosition(currentPos, diff.Text)
 	if err != nil {
 		return EditInsert{}, Position{}, err
 	}

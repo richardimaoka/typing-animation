@@ -1,17 +1,17 @@
 package vscode
 
-type EditSplitStrategy int
+type SplitStrategy int
 
 const (
-	SplitByLine EditSplitStrategy = 1
-	SplitByWord EditSplitStrategy = 2
-	SplitByChar EditSplitStrategy = 3
+	SplitByLine SplitStrategy = 1
+	SplitByWord SplitStrategy = 2
+	SplitByChar SplitStrategy = 3
 )
 
 // Interface representing atomic edit
 type Edit interface {
 	Apply(filename string) error
-	Split(strategy EditSplitStrategy) ([]Edit, error)
+	Split(strategy SplitStrategy) ([]Edit, error)
 }
 
 // Concrete edit types
@@ -24,6 +24,8 @@ type EditDelete struct {
 	DeleteText  string // DeleteText is necessary for word-by-word split, and char-by-char split
 	DeleteRange Range
 
+	// Why does it have *both* DeleteText and DeleteRange?
+	// reason: avoid erorr handling every time getting end pos.
 	// Theoretically, below also works:
 	//
 	//   EditDelete struct {
@@ -44,7 +46,7 @@ func (e EditDelete) Apply(filename string) error {
 	return Delete(filename, e.DeleteRange)
 }
 
-func (e EditInsert) Split(strategy EditSplitStrategy) ([]Edit, error) {
+func (e EditInsert) Split(strategy SplitStrategy) ([]Edit, error) {
 	switch strategy {
 	case SplitByLine:
 		return splitInsertByLine(e)
@@ -57,7 +59,7 @@ func (e EditInsert) Split(strategy EditSplitStrategy) ([]Edit, error) {
 	}
 }
 
-func (e EditDelete) Split(strategy EditSplitStrategy) ([]Edit, error) {
+func (e EditDelete) Split(strategy SplitStrategy) ([]Edit, error) {
 	switch strategy {
 	case SplitByLine:
 		return splitDeleteByLine(e)

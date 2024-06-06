@@ -99,7 +99,7 @@ func TestDeleteCharByChar(t *testing.T) {
 				EditDelete{DeleteText: "c", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 11}}},
 			},
 			false},
-		"new line at the en": {
+		"new line at the end": {
 			"abc\n",
 			Position{Line: 3, Character: 10},
 			[]Edit{
@@ -152,15 +152,29 @@ func TestAddWordByWord(t *testing.T) {
 			},
 			false},
 		"sentence with a wrong   spacing": {
-			"a b c",
+			"text with a wrong   spacing",
 			Position{Line: 3, Character: 10},
 			[]Edit{
-				EditInsert{NewText: "a ", Position: Position{Line: 3, Character: 10}},
-				EditInsert{NewText: "b ", Position: Position{Line: 3, Character: 12}},
-				EditInsert{NewText: "c", Position: Position{Line: 3, Character: 14}},
+				EditInsert{NewText: "text ", Position: Position{Line: 3, Character: 10}},
+				EditInsert{NewText: "with ", Position: Position{Line: 3, Character: 15}},
+				EditInsert{NewText: "a ", Position: Position{Line: 3, Character: 20}},
+				EditInsert{NewText: "wrong ", Position: Position{Line: 3, Character: 22}},
+				EditInsert{NewText: " ", Position: Position{Line: 3, Character: 28}},
+				EditInsert{NewText: " ", Position: Position{Line: 3, Character: 29}},
+				EditInsert{NewText: "spacing", Position: Position{Line: 3, Character: 30}},
 			},
 			false},
-		"ERROR: new line at the end":    {"0123456789\n", Position{Line: 3, Character: 10}, nil, true},
+		"new line at the end": {
+			"this is a text.\n",
+			Position{Line: 3, Character: 10},
+			[]Edit{
+				EditInsert{NewText: "\n", Position: Position{Line: 3, Character: 10}},
+				EditInsert{NewText: "this ", Position: Position{Line: 3, Character: 10}},
+				EditInsert{NewText: "is ", Position: Position{Line: 3, Character: 15}},
+				EditInsert{NewText: "a ", Position: Position{Line: 3, Character: 18}},
+				EditInsert{NewText: "text.", Position: Position{Line: 3, Character: 20}},
+			},
+			false},
 		"ERROR: new line in the middle": {"0123456789\n012三四", Position{Line: 3, Character: 10}, nil, true},
 	}
 

@@ -6,7 +6,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func TestOffsetPosition(t *testing.T) {
+func TestEditEndPosition(t *testing.T) {
 	cases := map[string]struct {
 		currentPos Position
 		newText    string
@@ -21,7 +21,7 @@ func TestOffsetPosition(t *testing.T) {
 
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
-			result, err := offsetPosition(c.currentPos, c.newText)
+			result, err := editEndPosition(c.currentPos, c.newText)
 			if err != nil {
 				if c.err {
 					return // expected error

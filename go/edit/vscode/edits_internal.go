@@ -107,16 +107,22 @@ func deleteCharByChar(startPos Position, line string) ([]Edit, error) {
 //
 // If line contains '\n', this returns an error
 // If line is empty, this should return the count of zero
-func addWordByWord(currentPos Position, lineString string) ([]Edit, error) {
-	pos := currentPos
-
-	if len(lineString) == 0 {
+func addWordByWord(currentPos Position, line string) ([]Edit, error) {
+	if len(line) == 0 {
 		return nil, nil
 	}
 
-	lineWords := strings.SplitAfter(lineString, " ")
-
 	edits := []Edit{}
+
+	// If line ends in '\n', add '\n' first otherwise the typing animation looks unnatural
+	lineWithoutNL, hasNewLine := strings.CutSuffix(line, "\n")
+	if hasNewLine {
+		edits = append(edits, EditInsert{Position: currentPos, NewText: "\n"})
+	}
+
+	lineWords := strings.SplitAfter(lineWithoutNL, " ")
+
+	pos := currentPos
 	for _, word := range lineWords {
 		edits = append(edits,
 			EditInsert{
