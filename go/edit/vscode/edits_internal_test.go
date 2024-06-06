@@ -6,7 +6,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func TestAddCharByChar(t *testing.T) {
+func TestInsertLineByChar(t *testing.T) {
 	cases := map[string]struct {
 		newText    string
 		currentPos Position
@@ -70,7 +70,7 @@ func TestAddCharByChar(t *testing.T) {
 	}
 }
 
-func TestDeleteCharByChar(t *testing.T) {
+func TestDeleteLineByChar(t *testing.T) {
 	cases := map[string]struct {
 		deleteText string
 		startPos   Position
@@ -134,7 +134,7 @@ func TestDeleteCharByChar(t *testing.T) {
 	}
 }
 
-func TestAddWordByWord(t *testing.T) {
+func TestInsertLineByWord(t *testing.T) {
 	cases := map[string]struct {
 		newText    string
 		currentPos Position
@@ -200,7 +200,7 @@ func TestAddWordByWord(t *testing.T) {
 	}
 }
 
-func TestDeleteWordByWord(t *testing.T) {
+func TestDeleteLineByWord(t *testing.T) {
 	cases := map[string]struct {
 		newText  string
 		startPos Position
@@ -266,42 +266,110 @@ func TestDeleteWordByWord(t *testing.T) {
 	}
 }
 
-// func TestSplitInsertByWord(t *testing.T) {
-// 	cases := map[string]struct {
-// 		edit     EditInsert
-// 		expected []Edit
-// 		err      bool
-// 	}{
-// 		"this is a text.": {
-// 			EditInsert{NewText: "abc def\nghi\njk", Position: Position{Line: 3, Character: 10}},
-// 			[]Edit{
-// 				// \n should be added first
-// 				EditInsert{NewText: "\n", Position: Position{Line: 3, Character: 10}},
-// 				EditInsert{NewText: "abc ", Position: Position{Line: 3, Character: 10}},
-// 				EditInsert{NewText: "def", Position: Position{Line: 3, Character: 14}},
-// 			},
-// 			false,
-// 		},
-// 	}
+func TestSplitInsertByLine(t *testing.T) {
+	cases := map[string]struct {
+		edit     EditInsert
+		expected []Edit
+		err      bool
+	}{
+		"single line": {
+			EditInsert{NewText: "123456789", Position: Position{Line: 3, Character: 10}},
+			[]Edit{
+				EditInsert{NewText: "123456789", Position: Position{Line: 3, Character: 10}},
+			},
+			false,
+		},
+		`single line, ends in \n`: {
+			EditInsert{NewText: "123456789\n", Position: Position{Line: 3, Character: 10}},
+			[]Edit{
+				EditInsert{NewText: "123456789\n", Position: Position{Line: 3, Character: 10}},
+			},
+			false,
+		},
+		`consecutive\n`: {
+			EditInsert{NewText: "123456\n\n\n789\n", Position: Position{Line: 3, Character: 10}},
+			[]Edit{
+				EditInsert{NewText: "123456\n", Position: Position{Line: 3, Character: 10}},
+				EditInsert{NewText: "\n", Position: Position{Line: 4, Character: 0}},
+				EditInsert{NewText: "\n", Position: Position{Line: 5, Character: 0}},
+				EditInsert{NewText: "789\n", Position: Position{Line: 6, Character: 0}},
+			},
+			false,
+		},
+	}
 
-// 	for name, c := range cases {
-// 		t.Run(name, func(t *testing.T) {
-// 			result, err := splitInsertByWord(c.edit)
-// 			if err != nil {
-// 				if c.err {
-// 					return // expected error
-// 				}
-// 				t.Fatalf("unexpected error: %s", err)
-// 			}
+	for name, c := range cases {
+		t.Run(name, func(t *testing.T) {
+			result, err := splitInsertByLine(c.edit)
+			if err != nil {
+				if c.err {
+					return // expected error
+				}
+				t.Fatalf("unexpected error: %s", err)
+			}
 
-// 			if c.err {
-// 				t.Fatalf("Expected error: but succeeded with result = %+v", result)
-// 			}
+			if c.err {
+				t.Fatalf("Expected error: but succeeded with result = %+v", result)
+			}
 
-// 			diff := cmp.Diff(c.expected, result)
-// 			if len(diff) > 0 {
-// 				t.Errorf("%s", diff)
-// 			}
-// 		})
-// 	}
-// }
+			diff := cmp.Diff(c.expected, result)
+			if len(diff) > 0 {
+				t.Errorf("%s", diff)
+			}
+		})
+	}
+}
+
+func TestSplitDeletetByLine(t *testing.T) {
+	cases := map[string]struct {
+		edit     EditDelete
+		expected []Edit
+		err      bool
+	}{
+		"single line": {
+			EditDelete{DeleteText: "123456789", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 20}}},
+			[]Edit{
+				EditDelete{DeleteText: "123456789", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 3, Character: 20}}},
+			},
+			false,
+		},
+		`single line, ends in \n`: {
+			EditDelete{DeleteText: "123456789\n", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 4, Character: 0}}},
+			[]Edit{
+				EditDelete{DeleteText: "123456789\n", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 4, Character: 0}}},
+			},
+			false,
+		},
+		`consecutive\n`: {
+			EditDelete{DeleteText: "123456\n\n\n789\n", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 7, Character: 0}}},
+			[]Edit{
+				EditDelete{DeleteText: "123456\n", DeleteRange: Range{Start: Position{Line: 3, Character: 10}, End: Position{Line: 4, Character: 0}}},
+				EditDelete{DeleteText: "\n", DeleteRange: Range{Start: Position{Line: 4, Character: 0}, End: Position{Line: 5, Character: 0}}},
+				EditDelete{DeleteText: "\n", DeleteRange: Range{Start: Position{Line: 5, Character: 0}, End: Position{Line: 6, Character: 0}}},
+				EditDelete{DeleteText: "789\n", DeleteRange: Range{Start: Position{Line: 6, Character: 0}, End: Position{Line: 7, Character: 0}}},
+			},
+			false,
+		},
+	}
+
+	for name, c := range cases {
+		t.Run(name, func(t *testing.T) {
+			result, err := splitDeleteByLine(c.edit)
+			if err != nil {
+				if c.err {
+					return // expected error
+				}
+				t.Fatalf("unexpected error: %s", err)
+			}
+
+			if c.err {
+				t.Fatalf("Expected error: but succeeded with result = %+v", result)
+			}
+
+			diff := cmp.Diff(c.expected, result)
+			if len(diff) > 0 {
+				t.Errorf("%s", diff)
+			}
+		})
+	}
+}

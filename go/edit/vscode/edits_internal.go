@@ -192,15 +192,18 @@ func deleteLineByWord(currentPos Position, line string) ([]Edit, error) {
 	return edits, nil
 }
 
-// Split 
+// Split
 func splitInsertByLine(insert EditInsert) ([]Edit, error) {
 	pos := insert.Position
 	lines := strings.SplitAfter(insert.NewText, "\n")
 
 	var edits []Edit
 	for _, l := range lines {
-		edits = append(edits, EditInsert{Position: pos, NewText: l})
-		pos = Position{Line: pos.Line + 1, Character: 0}
+		// if NewText ends in '\n', the last line is ""
+		if l != "" {
+			edits = append(edits, EditInsert{Position: pos, NewText: l})
+			pos = Position{Line: pos.Line + 1, Character: 0}
+		}
 	}
 
 	return edits, nil
@@ -210,23 +213,34 @@ func splitDeleteByLine(delete EditDelete) ([]Edit, error) {
 	start := delete.DeleteRange.Start
 	end := delete.DeleteRange.End
 
+	lines := strings.SplitAfter(delete.DeleteText, "\n")
+
 	var edits []Edit
-	for l := start.Line; l <= end.Line; l++ {
+	for lc := 0; lc < len(lines); lc++ {
+		line := lines[lc]
+
+		// if NewText ends in '\n', the last line is ""
+		if line == "" {
+			continue
+		}
+
 		var lineStart Position
-		if l == start.Line {
-			lineStart = Position{Line: l, Character: start.Character}
+		if lc == 0 {
+			// line at the start position
+			lineStart = Position{Line: start.Line + lc, Character: start.Character}
 		} else {
-			lineStart = Position{Line: l, Character: 0}
+			lineStart = Position{Line: start.Line + lc, Character: 0}
 		}
 
 		var lineEnd Position
-		if l == end.Line {
-			lineEnd = Position{Line: l, Character: end.Character}
+		if lc == len(lines)-1 {
+			// line at the end position
+			lineEnd = Position{Line: start.Line + lc, Character: end.Character}
 		} else {
-			lineEnd = Position{Line: l + 1, Character: 0}
+			lineEnd = Position{Line: start.Line + lc + 1, Character: 0}
 		}
 
-		edits = append(edits, EditDelete{DeleteRange: Range{Start: lineStart, End: lineEnd}})
+		edits = append(edits, EditDelete{DeleteText: line, DeleteRange: Range{Start: lineStart, End: lineEnd}})
 	}
 
 	return edits, nil
