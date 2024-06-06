@@ -50,7 +50,7 @@ func TestAddCharByChar(t *testing.T) {
 
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
-			result, err := addCharByChar(c.currentPos, c.newText)
+			result, err := insertLineByChar(c.currentPos, c.newText)
 			if err != nil {
 				if c.err {
 					return // expected error
@@ -114,7 +114,7 @@ func TestDeleteCharByChar(t *testing.T) {
 
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
-			result, err := deleteCharByChar(c.startPos, c.deleteText)
+			result, err := deleteLineByChar(c.startPos, c.deleteText)
 			if err != nil {
 				if c.err {
 					return // expected error
@@ -180,7 +180,7 @@ func TestAddWordByWord(t *testing.T) {
 
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
-			result, err := addWordByWord(c.currentPos, c.newText)
+			result, err := insertLineByWord(c.currentPos, c.newText)
 			if err != nil {
 				if c.err {
 					return // expected error
@@ -246,7 +246,7 @@ func TestDeleteWordByWord(t *testing.T) {
 
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
-			result, err := deleteWordByWord(c.startPos, c.newText)
+			result, err := deleteLineByWord(c.startPos, c.newText)
 			if err != nil {
 				if c.err {
 					return // expected error

@@ -11,7 +11,7 @@ import (
 //
 // If line contains '\n' in the middle, this returns an error
 // If line is empty, this should return the count of zero
-func addCharByChar(currentPos Position, line string) ([]Edit, error) {
+func insertLineByChar(currentPos Position, line string) ([]Edit, error) {
 	if len(line) == 0 {
 		return nil, nil
 	}
@@ -60,7 +60,7 @@ func addCharByChar(currentPos Position, line string) ([]Edit, error) {
 //
 // If line contains '\n' in the middle, this returns an error
 // If line is empty, this should return the count of zero
-func deleteCharByChar(startPos Position, line string) ([]Edit, error) {
+func deleteLineByChar(startPos Position, line string) ([]Edit, error) {
 	if len(line) == 0 {
 		return nil, nil
 	}
@@ -102,12 +102,12 @@ func deleteCharByChar(startPos Position, line string) ([]Edit, error) {
 	return edits, nil
 }
 
-// Return edis, split by word, to add line from currentPos
-// line should not contain \'\n'
+// Return edis, split by word, to insert line from currentPos
+// line may only contain '\n' at the end, but not in the middle
 //
-// If line contains '\n', this returns an error
+// If line contains '\n' in the middle, this returns an error
 // If line is empty, this should return the count of zero
-func addWordByWord(currentPos Position, line string) ([]Edit, error) {
+func insertLineByWord(currentPos Position, line string) ([]Edit, error) {
 	if len(line) == 0 {
 		return nil, nil
 	}
@@ -142,11 +142,11 @@ func addWordByWord(currentPos Position, line string) ([]Edit, error) {
 }
 
 // Return edis, split by word, to delete line from currentPos
-// line should not contain \'\n'
+// line may only contain '\n' at the end, but not in the middle
 //
-// If line contains '\n', this returns an error
+// If line contains '\n' in the middle, this returns an error
 // If line is empty, this should return the count of zero
-func deleteWordByWord(currentPos Position, line string) ([]Edit, error) {
+func deleteLineByWord(currentPos Position, line string) ([]Edit, error) {
 	if len(line) == 0 {
 		return nil, nil
 	}
@@ -192,9 +192,10 @@ func deleteWordByWord(currentPos Position, line string) ([]Edit, error) {
 	return edits, nil
 }
 
+// Split 
 func splitInsertByLine(insert EditInsert) ([]Edit, error) {
 	pos := insert.Position
-	lines := strings.Split(insert.NewText, "\n")
+	lines := strings.SplitAfter(insert.NewText, "\n")
 
 	var edits []Edit
 	for _, l := range lines {
@@ -237,7 +238,7 @@ func splitInsertByWord(insert EditInsert) ([]Edit, error) {
 
 	var edits []Edit
 	for _, l := range lines {
-		lineEdits, err := addWordByWord(pos, l)
+		lineEdits, err := insertLineByWord(pos, l)
 		if err != nil {
 			return nil, err
 		}
@@ -255,7 +256,7 @@ func splitDeleteByWord(delete EditDelete) ([]Edit, error) {
 
 	var edits []Edit
 	for _, l := range lines {
-		lineEdits, err := deleteWordByWord(pos, l)
+		lineEdits, err := deleteLineByWord(pos, l)
 		if err != nil {
 			return nil, err
 		}
@@ -273,7 +274,7 @@ func splitInsertByChar(insert EditInsert) ([]Edit, error) {
 
 	var edits []Edit
 	for _, l := range lines {
-		lineEdits, err := addCharByChar(pos, l)
+		lineEdits, err := insertLineByChar(pos, l)
 		if err != nil {
 			return nil, err
 		}
@@ -291,7 +292,7 @@ func splitDeleteByChar(delete EditDelete) ([]Edit, error) {
 
 	var edits []Edit
 	for _, l := range lines {
-		lineEdits, err := deleteCharByChar(pos, l)
+		lineEdits, err := deleteLineByChar(pos, l)
 		if err != nil {
 			return nil, err
 		}
