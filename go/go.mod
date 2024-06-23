@@ -1,6 +1,6 @@
 module github.com/richardimaoka/typing-animation/go
 
-go 1.18
+go 1.22
 
 require (
 	github.com/go-git/go-git/v5 v5.12.0

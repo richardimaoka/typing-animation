@@ -1,11 +1,6 @@
 package main
 
-import (
-	"fmt"
-	"log"
-
-	"github.com/richardimaoka/typing-animation/go/server/gitpkg"
-)
+import "github.com/richardimaoka/typing-animation/go/server"
 
 func main() {
 	// beforeFile, err := os.Open("testdata/before.txt")
@@ -47,10 +42,5 @@ func main() {
 	// // os.Remove(newFileName)
 	// example.ExperimentFiles()
 
-	repo, err := gitpkg.OpenOrClone("go-git", "go-git")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println("repo ", repo)
+	server.Run()
 }
