@@ -1,6 +1,11 @@
 package main
 
-import "github.com/richardimaoka/typing-animation/go/example"
+import (
+	"fmt"
+	"log"
+
+	"github.com/richardimaoka/typing-animation/go/server/gitpkg"
+)
 
 func main() {
 	// beforeFile, err := os.Open("testdata/before.txt")
@@ -40,5 +45,12 @@ func main() {
 	// // writeFile.Insert(vscode.Position{Line: 33, Character: 17}, "props.todos.reverse()")
 
 	// // os.Remove(newFileName)
-	example.ExperimentFiles()
+	// example.ExperimentFiles()
+
+	repo, err := gitpkg.OpenOrClone("go-git", "go-git")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("repo ", repo)
 }
