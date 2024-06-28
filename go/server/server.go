@@ -36,16 +36,16 @@ func HandleFiles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Path parameter checks passed
 	log.Printf("GET /repos/%s/%s/files called", orgname, reponame)
 
-	// Get git repo
+	// Get git repo, then get repo files
 	repo, err := gitpkg.OpenOrClone(orgname, reponame)
 	if err != nil {
 		log.Printf("Error upon getting git repo, %s", err)
 		writeError(w, http.StatusBadRequest, fmt.Errorf("orgname = '%s', reponame = '%s' are supposedly invalid", orgname, reponame))
 		return
 	}
-
 	files, err := gitpkg.RepoFiles(repo)
 	if err != nil {
 		log.Printf("Error upon getting git files in the repo, %s", err)
@@ -59,24 +59,18 @@ func HandleFiles(w http.ResponseWriter, r *http.Request) {
 		Repo    string
 		Files   []string
 	}{orgname, reponame, files}
-
 	err = json.NewEncoder(w).Encode(body)
+	w.Header().Set("Content-Type", "application/json")
 	if err != nil {
 		log.Printf("Error upon encoding body, %+v, to json, %s", body, err)
 		writeError(w, http.StatusInternalServerError, fmt.Errorf("internal error"))
 		return
 	}
-
-	
-
 }
 
 func Run() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /repos/{orgname}/{reponame}/files", HandleFiles)
-	mux.HandleFunc("GET /", func(w http.ResponseWriter, req *http.Request) {
-		fmt.Fprintf(w, "Welcome to the home page!")
-	})
 
 	port := 8080
 	log.Printf("starting server at http://localhost:%d\n", port)
