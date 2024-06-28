@@ -31,3 +31,27 @@ func OpenOrClone(orgname, reponame string) (*git.Repository, error) {
 
 	return repo, nil
 }
+
+func RepoFiles(repo *git.Repository) ([]string, error) {
+	headRef, err := repo.Head()
+	if err != nil {
+		return nil, err
+	}
+
+	commit, err := repo.CommitObject(headRef.Hash())
+	if err != nil {
+		return nil, err
+	}
+
+	iter, err := commit.Files()
+	if err != nil {
+		return nil, err
+	}
+
+	var files []string
+	for file, err := iter.Next(); err == nil; file, err = iter.Next() {
+		files = append(files, file.Name)
+	}
+
+	return files, nil
+}
