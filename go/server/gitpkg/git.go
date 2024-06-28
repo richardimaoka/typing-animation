@@ -5,6 +5,8 @@ import (
 	"os"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
 func localRepoPath(orgname, reponame string) string {
@@ -54,4 +56,36 @@ func RepoFiles(repo *git.Repository) ([]string, error) {
 	}
 
 	return files, nil
+}
+
+func RepoFileContents(repo *git.Repository, filePath, commitHashStr string) (string, error) {
+	var commitHash plumbing.Hash
+	if commitHashStr == "" {
+		headRef, err := repo.Head()
+		if err != nil {
+			return "", err
+		}
+		commitHash = headRef.Hash()
+	} else {
+		commitHash = plumbing.NewHash(commitHashStr)
+	}
+
+	commit, err := repo.CommitObject(commitHash)
+	if err != nil {
+		return "", err
+	}
+
+	file, err := commit.File(filePath)
+	if err == object.ErrFileNotFound {
+		return "", fmt.Errorf("file = '%s' not found, %s", filePath, err)
+	} else if err != nil {
+		return "", err
+	}
+
+	contents, err := file.Contents()
+	if err != nil {
+		return "", err
+	}
+
+	return contents, nil
 }
