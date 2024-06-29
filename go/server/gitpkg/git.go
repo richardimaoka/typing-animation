@@ -13,7 +13,7 @@ func localRepoPath(orgname, reponame string) string {
 	return fmt.Sprintf("/tmp/github.com/%s/%s", orgname, reponame)
 }
 
-func OpenOrClone(orgname, reponame string) (*git.Repository, error) {
+func openOrClone(orgname, reponame string) (*git.Repository, error) {
 	localPath := localRepoPath(orgname, reponame)
 
 	repo, err := git.PlainOpen(localPath)
@@ -34,7 +34,12 @@ func OpenOrClone(orgname, reponame string) (*git.Repository, error) {
 	return repo, nil
 }
 
-func RepoFiles(repo *git.Repository) ([]string, error) {
+func RepoFiles(orgname, reponame string) ([]string, error) {
+	repo, err := openOrClone(orgname, reponame)
+	if err != nil {
+		return nil, err
+	}
+
 	headRef, err := repo.Head()
 	if err != nil {
 		return nil, err
@@ -58,7 +63,12 @@ func RepoFiles(repo *git.Repository) ([]string, error) {
 	return files, nil
 }
 
-func RepoFileContents(repo *git.Repository, filePath, commitHashStr string) (string, error) {
+func RepoFileContents(orgname, reponame, filePath, commitHashStr string) (string, error) {
+	repo, err := openOrClone(orgname, reponame)
+	if err != nil {
+		return "", err
+	}
+
 	var commitHash plumbing.Hash
 	if commitHashStr == "" {
 		headRef, err := repo.Head()

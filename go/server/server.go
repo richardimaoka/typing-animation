@@ -39,17 +39,11 @@ func HandleRepoFiles(w http.ResponseWriter, r *http.Request) {
 	// Path parameter checks passed
 	log.Printf("GET /repos/%s/%s/files called", orgname, reponame)
 
-	// Get git repo, then get repo files
-	repo, err := gitpkg.OpenOrClone(orgname, reponame)
-	if err != nil {
-		log.Printf("Error upon getting git repo, %s", err)
-		writeError(w, http.StatusBadRequest, fmt.Errorf("orgname = '%s', reponame = '%s' are supposedly invalid", orgname, reponame))
-		return
-	}
-	files, err := gitpkg.RepoFiles(repo)
+	// Get repo files
+	files, err := gitpkg.RepoFiles(orgname, reponame)
 	if err != nil {
 		log.Printf("Error upon getting git files in the repo, %s", err)
-		writeError(w, http.StatusInternalServerError, fmt.Errorf("internal error"))
+		writeError(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -88,13 +82,7 @@ func HandleSingleFile(w http.ResponseWriter, r *http.Request) {
 	log.Printf("GET /repos/%s/%s/files/%s called", orgname, reponame, filepath)
 
 	// Get git repo, then get repo files
-	repo, err := gitpkg.OpenOrClone(orgname, reponame)
-	if err != nil {
-		log.Printf("Error upon getting git repo, %s", err)
-		writeError(w, http.StatusBadRequest, fmt.Errorf("orgname = '%s', reponame = '%s' are supposedly invalid", orgname, reponame))
-		return
-	}
-	contents, err := gitpkg.RepoFileContents(repo, filepath, commitHash)
+	contents, err := gitpkg.RepoFileContents(orgname, reponame, filepath, commitHash)
 	if err != nil {
 		log.Printf("Error upon getting git file in the repo, %s", err)
 		writeError(w, http.StatusInternalServerError, fmt.Errorf("internal error"))
