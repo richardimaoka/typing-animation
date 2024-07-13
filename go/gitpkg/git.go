@@ -34,6 +34,31 @@ func openOrClone(orgname, reponame string) (*git.Repository, error) {
 	return repo, nil
 }
 
+func ToHash(hashString string) (plumbing.Hash, error) {
+	if !plumbing.IsHash(hashString) {
+		return plumbing.ZeroHash, fmt.Errorf("'%s' is an invalid git hash", hashString)
+	}
+
+	hash := plumbing.NewHash(hashString)
+	return hash, nil
+}
+
+func CommitObject(repo *git.Repository, hashString string) (*object.Commit, error) {
+	errorPrefix := "gitpkg.CommitObject failed"
+
+	hash, err := ToHash(hashString)
+	if err != nil {
+		return nil, fmt.Errorf("%s, %s", errorPrefix, err)
+	}
+
+	commit, err := repo.CommitObject(hash)
+	if err != nil {
+		return nil, fmt.Errorf("%s, %s", errorPrefix, err)
+	}
+
+	return commit, err
+}
+
 func RepoFiles(orgname, reponame string) ([]string, error) {
 	repo, err := openOrClone(orgname, reponame)
 	if err != nil {
