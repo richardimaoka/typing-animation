@@ -1,64 +1,48 @@
 package vscode
 
 import (
-	"bufio"
 	"fmt"
 	"io"
 	"os"
-	"strings"
 	"syscall"
 )
 
 func Insert(reader io.Reader, position Position, newText string) (string, error) {
-	fromReader := bufio.NewReader(reader)
-	var toBuilder strings.Builder
+	errorPrefix := "Insert() error"
 
-	// 1. Copy up to position.Line-1
-	if position.Line > 0 {
-		if err := copyUpToLine(fromReader, &toBuilder, position.Line-1); err != nil {
-			return "", err
-		}
+	// 1. Validate arguments
+	if err := position.Validate(); err != nil {
+		return "", fmt.Errorf("%s, %s", errorPrefix, err)
 	}
 
-	// 2. Process the position.Line
-	if err := processLine(fromReader, &toBuilder, position, newText); err != nil {
-		return "", err
+	// 3. Internal logic
+	result, err := insertInternal(reader, position, newText)
+	if err != nil {
+		return "", fmt.Errorf("%s, %s", errorPrefix, err)
 	}
 
-	// 3. Copy the rest, until the end of file
-	if err := copyUntilEOF(fromReader, &toBuilder); err != nil {
-		return "", err
-	}
-
-	return toBuilder.String(), nil
+	return result, nil
 }
 
 func Delete(reader io.Reader, delRange Range) (string, error) {
-	fromReader := bufio.NewReader(reader)
-	var toBuilder strings.Builder
+	errorPrefix := "Delete() error"
 
-	// 1. Copy up to position.Line-1
-	if delRange.Start.Line > 0 {
-		if err := copyUpToLine(fromReader, &toBuilder, delRange.Start.Line-1); err != nil {
-			return "", err
-		}
+	// 1. Validate arguments
+	if err := delRange.Validate(); err != nil {
+		return "", fmt.Errorf("%s, %s", errorPrefix, err)
 	}
 
-	// 2. Process from start line to end line
-	if err := processLinesOnRange(fromReader, &toBuilder, delRange); err != nil {
-		return "", err
+	// 2. Internal logic
+	result, err := deleteInternal(reader, delRange)
+	if err != nil {
+		return "", fmt.Errorf("%s, %s", errorPrefix, err)
 	}
 
-	// 3. Copy the rest, until the end of file
-	if err := copyUntilEOF(fromReader, &toBuilder); err != nil {
-		return "", err
-	}
-
-	return toBuilder.String(), nil
+	return result, nil
 }
 
 func InsertInFile(filename string, position Position, newText string) error {
-	errorPrefix := fmt.Errorf("Insert() error in file = '%s'", filename)
+	errorPrefix := fmt.Errorf("InsertInFile() error in file = '%s'", filename)
 	// 1. Validate arguments
 	if err := position.Validate(); err != nil {
 		return fmt.Errorf("%s, %s", errorPrefix, err)
@@ -71,8 +55,8 @@ func InsertInFile(filename string, position Position, newText string) error {
 	}
 	defer file.Close()
 
-	// 3. Core logic
-	result, err := Insert(file, position, newText)
+	// 3. Internal logic
+	result, err := insertInternal(file, position, newText)
 	if err != nil {
 		return fmt.Errorf("%s, %s", errorPrefix, err)
 	}
@@ -86,7 +70,7 @@ func InsertInFile(filename string, position Position, newText string) error {
 }
 
 func DeleteInFile(filename string, delRange Range) error {
-	errorPrefix := fmt.Errorf("Delete() error in file = '%s'", filename)
+	errorPrefix := fmt.Errorf("DeleteInFile() error in file = '%s'", filename)
 
 	// 1. Validate arguments
 	if err := delRange.Validate(); err != nil {
@@ -100,8 +84,8 @@ func DeleteInFile(filename string, delRange Range) error {
 	}
 	defer file.Close()
 
-	// 3. Core logic
-	result, err := Delete(file, delRange)
+	// 3. Internal logic
+	result, err := deleteInternal(file, delRange)
 	if err != nil {
 		return fmt.Errorf("%s, %s", errorPrefix, err)
 	}
