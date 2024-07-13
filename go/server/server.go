@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/richardimaoka/typing-animation/go/server/gitpkg"
+	"github.com/richardimaoka/typing-animation/go/gitpkg"
 )
 
 func writeError(w http.ResponseWriter, statusCode int, err error) {
