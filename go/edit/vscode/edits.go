@@ -1,5 +1,7 @@
 package vscode
 
+import "strings"
+
 type SplitStrategy int
 
 const (
@@ -11,6 +13,7 @@ const (
 // Interface representing atomic edit
 type Edit interface {
 	ApplyToFile(filename string) error
+	Apply(before string) (string, error)
 	Split(strategy SplitStrategy) ([]Edit, error)
 }
 
@@ -38,8 +41,18 @@ type EditDelete struct {
 	// So, better to store the entire Range instead.
 }
 
+func (e EditInsert) Apply(before string) (string, error) {
+	reader := strings.NewReader(before)
+	return Insert(reader, e.Position, e.NewText)
+}
+
 func (e EditInsert) ApplyToFile(filename string) error {
 	return InsertInFile(filename, e.Position, e.NewText)
+}
+
+func (e EditDelete) Apply(before string) (string, error) {
+	reader := strings.NewReader(before)
+	return Delete(reader, e.DeleteRange)
 }
 
 func (e EditDelete) ApplyToFile(filename string) error {
