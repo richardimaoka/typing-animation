@@ -286,65 +286,50 @@ func writeFromBeginning(file *os.File, text string) error {
 	return err
 }
 
-func insertInternal(rwFile *os.File, position Position, newText string) error {
-	fromReader := bufio.NewReader(rwFile)
+func insertInternal(reader io.Reader, position Position, newText string) (string, error) {
+	fromReader := bufio.NewReader(reader)
 	var toBuilder strings.Builder
 
 	// 1. Copy up to position.Line-1
 	if position.Line > 0 {
 		if err := copyUpToLine(fromReader, &toBuilder, position.Line-1); err != nil {
-			return err
+			return "", err
 		}
 	}
 
 	// 2. Process the position.Line
 	if err := processLine(fromReader, &toBuilder, position, newText); err != nil {
-		return err
+		return "", err
 	}
 
 	// 3. Copy the rest, until the end of file
 	if err := copyUntilEOF(fromReader, &toBuilder); err != nil {
-		return err
+		return "", err
 	}
 
-	// 4. Write to file
-	if err := writeFromBeginning(rwFile, toBuilder.String()); err != nil {
-		return err
-	}
-
-	return nil
+	return toBuilder.String(), nil
 }
 
-func deleteInternal(rwFile *os.File, delRange Range) error {
-	fromReader := bufio.NewReader(rwFile)
+func deleteInternal(reader io.Reader, delRange Range) (string, error) {
+	fromReader := bufio.NewReader(reader)
 	var toBuilder strings.Builder
 
 	// 1. Copy up to position.Line-1
 	if delRange.Start.Line > 0 {
 		if err := copyUpToLine(fromReader, &toBuilder, delRange.Start.Line-1); err != nil {
-			return err
+			return "", err
 		}
 	}
 
 	// 2. Process from start line to end line
 	if err := processLinesOnRange(fromReader, &toBuilder, delRange); err != nil {
-		return err
+		return "", err
 	}
 
 	// 3. Copy the rest, until the end of file
 	if err := copyUntilEOF(fromReader, &toBuilder); err != nil {
-		return err
+		return "", err
 	}
 
-	// 4. Write to file
-	//   os.Truncate() is needed because the deletion makes file shorter,
-	//   otherwise, there will be a residual contents at the end of the file
-	if err := os.Truncate(rwFile.Name(), 0); err != nil {
-		return err
-	}
-	if err := writeFromBeginning(rwFile, toBuilder.String()); err != nil {
-		return err
-	}
-
-	return nil
+	return toBuilder.String(), nil
 }
