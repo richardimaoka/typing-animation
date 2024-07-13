@@ -7,7 +7,7 @@ import (
 	"github.com/richardimaoka/typing-animation/go/diff"
 )
 
-func Test(t *testing.T) {
+func TestEdits(t *testing.T) {
 	orgname := "spf13"
 	reponame := "cobra"
 	filePath := "command.go"
@@ -89,7 +89,7 @@ func Test(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			// ## Edit the current contents to catch up with the next
+			// ## Apply edits to the current contents
 			edits, err := diff.CalcEdits(currentContents, nextContents)
 			if err != nil {
 				t.Fatal(err)
@@ -102,7 +102,7 @@ func Test(t *testing.T) {
 				}
 			}
 
-			// ## Compare
+			// ## Compare the updated (current) contents and the next
 			diff := cmp.Diff(updatedContents, nextContents)
 			if diff != "" {
 				t.Fatalf("%s vs. %s has difference:\n%s", currentHash, nextHash, diff)
