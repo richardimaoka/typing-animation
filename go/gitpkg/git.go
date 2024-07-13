@@ -9,10 +9,6 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
-func localRepoPath(orgname, reponame string) string {
-	return fmt.Sprintf("/tmp/github.com/%s/%s", orgname, reponame)
-}
-
 func openOrClone(orgname, reponame string) (*git.Repository, error) {
 	localPath := localRepoPath(orgname, reponame)
 
@@ -34,29 +30,37 @@ func openOrClone(orgname, reponame string) (*git.Repository, error) {
 	return repo, nil
 }
 
-func ToHash(hashString string) (plumbing.Hash, error) {
-	if !plumbing.IsHash(hashString) {
-		return plumbing.ZeroHash, fmt.Errorf("'%s' is an invalid git hash", hashString)
-	}
-
-	hash := plumbing.NewHash(hashString)
-	return hash, nil
-}
-
 func CommitObject(repo *git.Repository, hashString string) (*object.Commit, error) {
 	errorPrefix := "gitpkg.CommitObject failed"
 
-	hash, err := ToHash(hashString)
-	if err != nil {
-		return nil, fmt.Errorf("%s, %s", errorPrefix, err)
-	}
-
-	commit, err := repo.CommitObject(hash)
+	commit, err := commitObjectInternal(repo, hashString)
 	if err != nil {
 		return nil, fmt.Errorf("%s, %s", errorPrefix, err)
 	}
 
 	return commit, err
+}
+
+func FileInCommit(repo *git.Repository, hashString, filePath string) (*object.File, error) {
+	errorPrefix := "gitpkg.FileInCommit failed"
+
+	file, err := fileInCommitInternal(repo, hashString, filePath)
+	if err != nil {
+		return nil, fmt.Errorf("%s, %s", errorPrefix, err)
+	}
+
+	return file, err
+}
+
+func FileContentsInCommit(repo *git.Repository, hashString, filePath string) (string, error) {
+	errorPrefix := "gitpkg.FileContentsInCommit failed"
+
+	contents, err := fileContentsInCommitInternal(repo, hashString, filePath)
+	if err != nil {
+		return "", fmt.Errorf("%s, %s", errorPrefix, err)
+	}
+
+	return contents, err
 }
 
 func RepoFiles(orgname, reponame string) ([]string, error) {
