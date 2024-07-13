@@ -109,6 +109,13 @@ func Run() {
 	mux.HandleFunc("GET /repos/{orgname}/{reponame}/files", HandleRepoFiles)
 	mux.HandleFunc("GET /repos/{orgname}/{reponame}/files/{filepath...}", HandleSingleFile)
 
+	// mux.HandleFunc("GET /repos/{orgname}/{reponame}/branches", HandleRepoFiles)
+	// mux.HandleFunc("GET /repos/{orgname}/{reponame}/branches", HandleRepoFiles)
+	// mux.HandleFunc("GET /repos/{orgname}/{reponame}/branches", HandleRepoFiles)
+	// mux.HandleFunc("GET /repos/{orgname}/{reponame}/branches", HandleRepoFiles)
+	// mux.HandleFunc("GET /repos/{orgname}/{reponame}/branches", HandleRepoFiles)
+	// mux.HandleFunc("GET /repos/{orgname}/{reponame}/branches", HandleRepoFiles)
+
 	port := 8080
 	log.Printf("starting server at http://localhost:%d\n", port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), mux))
