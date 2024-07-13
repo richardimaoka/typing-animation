@@ -73,18 +73,20 @@ func Test(t *testing.T) {
 	for i := 0; i < len(commitHashes)-1; i++ {
 		t.Run(commitHashes[i], func(t *testing.T) {
 			currentHash := commitHashes[i]
-			nextHash := commitHashes[i+1]
-
 			_, err := FileContentsInCommit(repo, currentHash, filePath)
 			if err != nil {
 				t.Fatal(err)
 			}
 
+			nextHash := commitHashes[i+1]
 			_, err = FileContentsInCommit(repo, nextHash, filePath)
 			if err != nil {
 				t.Fatal(err)
 			}
 
+			// edits :=
+			// for edits
+			//
 		})
 	}
 }

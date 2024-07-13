@@ -10,7 +10,7 @@ const (
 
 // Interface representing atomic edit
 type Edit interface {
-	Apply(filename string) error
+	ApplyToFile(filename string) error
 	Split(strategy SplitStrategy) ([]Edit, error)
 }
 
@@ -38,11 +38,11 @@ type EditDelete struct {
 	// So, better to store the entire Range instead.
 }
 
-func (e EditInsert) Apply(filename string) error {
+func (e EditInsert) ApplyToFile(filename string) error {
 	return InsertInFile(filename, e.Position, e.NewText)
 }
 
-func (e EditDelete) Apply(filename string) error {
+func (e EditDelete) ApplyToFile(filename string) error {
 	return DeleteInFile(filename, e.DeleteRange)
 }
 

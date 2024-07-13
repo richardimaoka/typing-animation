@@ -107,7 +107,7 @@ func ExperimentFiles() {
 	}
 
 	for _, e := range edits {
-		e.Apply(resultFile)
+		e.ApplyToFile(resultFile)
 		time.Sleep(300 * time.Millisecond)
 	}
 }
