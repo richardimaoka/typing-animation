@@ -55,7 +55,7 @@ func TestInsert(t *testing.T) {
 
 			// 2. Target operation
 			//    Insert to temp file
-			err = vscode.Insert(tempFile, c.pos, c.newText)
+			err = vscode.InsertInFile(tempFile, c.pos, c.newText)
 			if err != nil {
 				if c.err {
 					return // expected error
@@ -119,7 +119,7 @@ func TestDelete(t *testing.T) {
 
 			// 2. Target operation
 			//    Delete in temp file
-			err = vscode.Delete(tempFile, c.delRange)
+			err = vscode.DeleteInFile(tempFile, c.delRange)
 			if err != nil {
 				if c.err {
 					return // expected error

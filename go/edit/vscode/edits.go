@@ -39,11 +39,11 @@ type EditDelete struct {
 }
 
 func (e EditInsert) Apply(filename string) error {
-	return Insert(filename, e.Position, e.NewText)
+	return InsertInFile(filename, e.Position, e.NewText)
 }
 
 func (e EditDelete) Apply(filename string) error {
-	return Delete(filename, e.DeleteRange)
+	return DeleteInFile(filename, e.DeleteRange)
 }
 
 func (e EditInsert) Split(strategy SplitStrategy) ([]Edit, error) {
