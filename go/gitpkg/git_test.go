@@ -3,7 +3,6 @@ package gitpkg
 import (
 	"os"
 	"testing"
-	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/richardimaoka/typing-animation/go/diff"
@@ -121,9 +120,6 @@ func deleteFile(t *testing.T, filePath string) {
 }
 
 func TestDebug(t *testing.T) {
-	// Comment this out to un-skip and debug the behavior
-	t.Skip("Skipped TestDbug - comment this out to un-skip and debug the behavior")
-
 	orgname := "spf13"
 	reponame := "cobra"
 	filePath := "command.go"
@@ -189,6 +185,11 @@ func TestDebug(t *testing.T) {
 		"e94f6d0dd9a5e5738dca6bce03c4b1207ffbc0ec", //Address golangci-lint deprecation warnings, enable some more linters (#2152)
 	}
 
+	currentFile := "testdata/current.go"
+	defer deleteFile(t, currentFile)
+	nextFile := "testdata/next.go"
+	defer deleteFile(t, nextFile)
+
 	for i := 0; i < len(commitHashes)-1; i++ {
 		t.Run(commitHashes[i], func(t *testing.T) {
 			//
@@ -199,11 +200,9 @@ func TestDebug(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			currentFile := "testdata/current.go"
 			if err := os.WriteFile(currentFile, []byte(currentContents), 0666); err != nil {
 				t.Fatal(err)
 			}
-			defer deleteFile(t, currentFile)
 
 			//
 			// ## Next commit's contents
@@ -213,11 +212,9 @@ func TestDebug(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			nextFile := "testdata/next.go"
 			if err := os.WriteFile(nextFile, []byte(nextContents), 0666); err != nil {
 				t.Fatal(err)
 			}
-			defer deleteFile(t, nextFile)
 
 			//
 			// ## Apply edits to the current contents
@@ -231,7 +228,6 @@ func TestDebug(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				time.Sleep(100 * time.Millisecond)
 			}
 
 			// ## Compare the updated (current) contents and the next
