@@ -122,7 +122,7 @@ func deleteFile(t *testing.T, filePath string) {
 
 func TestDebug(t *testing.T) {
 	// Comment this out to un-skip and debug the behavior
-	// t.Skip("Skipped TestDbug - comment this out to un-skip and debug the behavior")
+	t.Skip("Skipped TestDbug - comment this out to un-skip and debug the behavior")
 
 	orgname := "spf13"
 	reponame := "cobra"
