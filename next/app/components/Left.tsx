@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import styles from "./Left.module.css";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -10,10 +9,10 @@ export function Left(props: Props) {
   const router = useRouter();
 
   const searchParams = useSearchParams();
-  const orgname = searchParams.get("orgname");
-  const reponame = searchParams.get("reponame");
+  const orgnameParam = searchParams.get("orgname");
+  const reponameParam = searchParams.get("reponame");
 
-  function newURL(newOrg: string | null, newRepo: string | null): string {
+  function newPath(newOrg: string | null, newRepo: string | null): string {
     let params = [];
 
     if (newOrg && newOrg !== "") {
@@ -30,11 +29,14 @@ export function Left(props: Props) {
     }
   }
 
-  function onReponameChange(newRepo: string) {}
+  function onReponameChange(newRepo: string) {
+    const href = newPath(orgnameParam, newRepo);
+    router.push(href);
+  }
 
   function onOrgnameChange(newOrg: string) {
-    const url = newURL(newOrg, reponame);
-    router.push(url);
+    const href = newPath(newOrg, reponameParam);
+    router.push(href);
   }
 
   return (
@@ -75,11 +77,24 @@ export function Left(props: Props) {
       <label htmlFor="reponame" className={styles.label}>
         GitHub repository
       </label>
-      <input id="reponame" className={styles.input} placeholder="{reponame}" />
+      <input
+        id="reponame"
+        className={styles.input}
+        placeholder="{reponame}"
+        onBlur={(e) => {
+          onReponameChange(e.target.value);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            onReponameChange(e.currentTarget.value);
+          }
+        }}
+      />
 
       <label className={styles.label + " " + styles.grey}>GitHub URL</label>
       <div className={styles.grey}>
-        https://github.com/{orgname || "{orgname}"}/{reponame || "{reponame}"}
+        https://github.com/{orgnameParam || "{orgname}"}/
+        {reponameParam || "{reponame}"}
       </div>
 
       <label htmlFor="branch" className={styles.label}>
