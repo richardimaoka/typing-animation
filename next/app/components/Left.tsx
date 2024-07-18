@@ -11,15 +11,31 @@ export function Left(props: Props) {
   const searchParams = useSearchParams();
   const orgnameParam = searchParams.get("orgname");
   const reponameParam = searchParams.get("reponame");
+  const branchParam = searchParams.get("branch");
+  const filepathParam = searchParams.get("filepath");
 
-  function newPath(newOrg: string | null, newRepo: string | null): string {
+  function newPath(
+    newOrg: string | null,
+    newRepo: string | null,
+    newBranch: string | null,
+    newFilepath: string | null
+  ): string {
     let params = [];
 
     if (newOrg && newOrg !== "") {
       params.push("orgname=" + newOrg);
     }
+
     if (newRepo && newRepo !== "") {
       params.push("reponame=" + newRepo);
+    }
+
+    if (newBranch && newBranch !== "") {
+      params.push("branch=" + newBranch);
+    }
+
+    if (newFilepath && newFilepath !== "") {
+      params.push("filepath=" + newFilepath);
     }
 
     if (params.length === 0) {
@@ -30,12 +46,22 @@ export function Left(props: Props) {
   }
 
   function onReponameChange(newRepo: string) {
-    const href = newPath(orgnameParam, newRepo);
+    const href = newPath(orgnameParam, newRepo, branchParam, filepathParam);
     router.push(href);
   }
 
   function onOrgnameChange(newOrg: string) {
-    const href = newPath(newOrg, reponameParam);
+    const href = newPath(newOrg, reponameParam, branchParam, filepathParam);
+    router.push(href);
+  }
+
+  function onFilePathChange(newFilePath: string) {
+    const href = newPath(orgnameParam, reponameParam, branchParam, newFilePath);
+    router.push(href);
+  }
+
+  function onBranchChange(newBranch: string) {
+    const href = newPath(orgnameParam, reponameParam, newBranch, filepathParam);
     router.push(href);
   }
 
@@ -103,14 +129,33 @@ export function Left(props: Props) {
       <input
         id="branch"
         className={styles.input}
-        defaultValue="main"
-        placeholder="{branch}"
+        placeholder="main"
+        onBlur={(e) => {
+          onBranchChange(e.target.value);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            onBranchChange(e.currentTarget.value);
+          }
+        }}
       />
 
       <label htmlFor="filepath" className={styles.label}>
         file path
       </label>
-      <input id="filepath" className={styles.input} placeholder="{filePath}" />
+      <input
+        id="filepath"
+        className={styles.input}
+        placeholder="{filepath}"
+        onBlur={(e) => {
+          onFilePathChange(e.target.value);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            onFilePathChange(e.currentTarget.value);
+          }
+        }}
+      />
 
       <label htmlFor="commits" className={styles.label + " " + styles.top}>
         commits
