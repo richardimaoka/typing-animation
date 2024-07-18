@@ -1,9 +1,10 @@
+import { Left } from "./components/Left";
 import styles from "./page.module.css";
 
 export default function Page() {
   return (
     <div className={styles.component}>
-      <div>left</div>
+      <Left />
       <div>right</div>
     </div>
   );
