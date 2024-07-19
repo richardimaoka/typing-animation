@@ -109,7 +109,7 @@ func Run() {
 	mux.HandleFunc("GET /{orgname}/{reponame}/files", HandleRepoFiles)
 	mux.HandleFunc("GET /{orgname}/{reponame}/files/{filepath...}", HandleSingleFile)
 
-	// mux.HandleFunc("GET /repos/{orgname}/{reponame}/branches", HandleRepoFiles)
+	// mux.HandleFunc("GET /repos/{orgname}/{reponame}/", HandleRepoFiles)
 	// mux.HandleFunc("GET /repos/{orgname}/{reponame}/branches", HandleRepoFiles)
 	// mux.HandleFunc("GET /repos/{orgname}/{reponame}/branches", HandleRepoFiles)
 	// mux.HandleFunc("GET /repos/{orgname}/{reponame}/branches", HandleRepoFiles)
