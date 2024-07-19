@@ -3,8 +3,13 @@
 import styles from "./Left.module.css";
 import { useRouter, useSearchParams } from "next/navigation";
 
+type CommitData = {
+  hash: string;
+  message: string;
+};
+
 interface Props {
-  commits?: string[];
+  commits?: CommitData[];
   files?: string[];
 
   orgname?: string;
@@ -14,7 +19,6 @@ interface Props {
 }
 
 export function Left(props: Props) {
-  console.log("branch = ", props.branch);
   const router = useRouter();
 
   function newPath(
@@ -173,10 +177,19 @@ export function Left(props: Props) {
         }}
       />
 
-      <label htmlFor="commits" className={styles.label + " " + styles.top}>
-        commits
-      </label>
-      <div id="commits" className={styles.commits} />
+      <label className={styles.label + " " + styles.top}>commits</label>
+      <fieldset className={styles.commits}>
+        {props.commits &&
+          props.commits.map((c) => (
+            <div key={c.hash}>
+              <input type="radio" id={c.hash} name="commit" />
+              <label htmlFor={c.hash}>
+                <span className={styles.hash}>{c.hash}</span>
+                <span className={styles.message}>{c.message}</span>
+              </label>
+            </div>
+          ))}
+      </fieldset>
     </div>
   );
 }
