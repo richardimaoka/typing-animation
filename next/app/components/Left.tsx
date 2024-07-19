@@ -142,6 +142,10 @@ export function Left(props: Props) {
         {props.reponame || "{reponame}"}
       </div>
 
+      {/* Empty space in CSS grid */}
+      <label />
+      <div></div>
+
       <label htmlFor="branch" className={styles.label}>
         branch
       </label>

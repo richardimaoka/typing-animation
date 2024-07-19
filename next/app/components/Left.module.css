@@ -3,6 +3,15 @@
   width: 50rem;
 
   grid-template-columns: 15rem 1fr;
+  grid-template-rows:
+    auto /* organization */
+    auto /* repository */
+    auto /* GitHub URL */
+    20px /* empty space */
+    auto /* branch */
+    auto /* filepath */
+    1fr; /* commits */
+
   align-items: center; /* do not expand input height */
   column-gap: 1rem;
   row-gap: 1rem;
@@ -26,8 +35,7 @@
 }
 
 .commits {
-  height: 50rem;
-  background-color: grey;
+  align-self: start;
 }
 
 .hash {
