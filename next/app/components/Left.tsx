@@ -3,22 +3,25 @@
 import styles from "./Left.module.css";
 import { useRouter, useSearchParams } from "next/navigation";
 
-interface Props {}
+interface Props {
+  commits?: string[];
+  files?: string[];
+
+  orgname?: string;
+  reponame?: string;
+  branch: string;
+  filepath?: string;
+}
 
 export function Left(props: Props) {
+  console.log("branch = ", props.branch);
   const router = useRouter();
 
-  const searchParams = useSearchParams();
-  const orgnameParam = searchParams.get("orgname");
-  const reponameParam = searchParams.get("reponame");
-  const branchParam = searchParams.get("branch");
-  const filepathParam = searchParams.get("filepath");
-
   function newPath(
-    newOrg: string | null,
-    newRepo: string | null,
-    newBranch: string | null,
-    newFilepath: string | null
+    newOrg: string | undefined,
+    newRepo: string | undefined,
+    newBranch: string | undefined,
+    newFilepath: string | undefined
   ): string {
     let params = [];
 
@@ -35,7 +38,7 @@ export function Left(props: Props) {
     }
 
     if (newFilepath && newFilepath !== "") {
-      params.push("filepath=" + newFilepath);
+      params.push("filepath=" + encodeURIComponent(newFilepath));
     }
 
     if (params.length === 0) {
@@ -46,22 +49,32 @@ export function Left(props: Props) {
   }
 
   function onReponameChange(newRepo: string) {
-    const href = newPath(orgnameParam, newRepo, branchParam, filepathParam);
+    const href = newPath(props.orgname, newRepo, props.branch, props.filepath);
     router.push(href);
   }
 
   function onOrgnameChange(newOrg: string) {
-    const href = newPath(newOrg, reponameParam, branchParam, filepathParam);
+    const href = newPath(newOrg, props.reponame, props.branch, props.filepath);
     router.push(href);
   }
 
   function onFilePathChange(newFilePath: string) {
-    const href = newPath(orgnameParam, reponameParam, branchParam, newFilePath);
+    const href = newPath(
+      props.orgname,
+      props.reponame,
+      props.branch,
+      newFilePath
+    );
     router.push(href);
   }
 
   function onBranchChange(newBranch: string) {
-    const href = newPath(orgnameParam, reponameParam, newBranch, filepathParam);
+    const href = newPath(
+      props.orgname,
+      props.reponame,
+      newBranch,
+      props.filepath
+    );
     router.push(href);
   }
 
@@ -89,6 +102,7 @@ export function Left(props: Props) {
       <input
         id="orgname"
         className={styles.input}
+        defaultValue={props.orgname}
         placeholder="{orgname}"
         onBlur={(e) => {
           onOrgnameChange(e.target.value);
@@ -106,6 +120,7 @@ export function Left(props: Props) {
       <input
         id="reponame"
         className={styles.input}
+        defaultValue={props.reponame}
         placeholder="{reponame}"
         onBlur={(e) => {
           onReponameChange(e.target.value);
@@ -117,10 +132,10 @@ export function Left(props: Props) {
         }}
       />
 
-      <label className={styles.label + " " + styles.grey}>GitHub URL</label>
+      <label className={styles.label}>GitHub URL</label>
       <div className={styles.grey}>
-        https://github.com/{orgnameParam || "{orgname}"}/
-        {reponameParam || "{reponame}"}
+        https://github.com/{props.orgname || "{orgname}"}/
+        {props.reponame || "{reponame}"}
       </div>
 
       <label htmlFor="branch" className={styles.label}>
@@ -130,6 +145,7 @@ export function Left(props: Props) {
         id="branch"
         className={styles.input}
         placeholder="main"
+        defaultValue={props.branch}
         onBlur={(e) => {
           onBranchChange(e.target.value);
         }}
