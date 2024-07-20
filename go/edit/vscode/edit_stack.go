@@ -69,14 +69,14 @@ func (s *EditStack) CalcMonacoEdits() ([]monaco.SingleEditOperation, error) {
 
 		switch diff.Type {
 		case DiffInsert:
-			edits = append(edits, monaco.SingleEditOperation{Text: diff.Text, Range: mRange})
+			edits = append(edits, monaco.SingleEditOperation{Text: diff.Text, Range: mRange, Operation: "Insert"})
 			currentPos = rangeEndPos
 
 		case DiffEqual:
 			currentPos = rangeEndPos
 
 		case DiffDelete:
-			edits = append(edits, monaco.SingleEditOperation{Text: "" /*empty text for delete*/, Range: mRange})
+			edits = append(edits, monaco.SingleEditOperation{Text: "" /*empty text for delete*/, Range: mRange, Operation: "Delete"})
 			// currentPos doesn't move after delete
 
 		default:
