@@ -10,6 +10,21 @@ const (
 	SplitByChar SplitStrategy = 3
 )
 
+type EditOperation int
+
+const (
+	// EditDelete item represents a delete edit.
+	OpEditDelete EditOperation = -1
+	// EditInsert item represents an insert edit.
+	OpEditInsert EditOperation = 1
+)
+
+// TODO replace Edit with EditInernal
+type EditInternal struct {
+	Text  string
+	Range //embed
+}
+
 // Interface representing atomic edit
 type Edit interface {
 	ApplyToFile(filename string) error

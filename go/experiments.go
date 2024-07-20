@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/richardimaoka/typing-animation/go/diff"
@@ -29,10 +30,15 @@ func Experiment() {
 		panic(err)
 	}
 
-	edits, err := diff.CalcEdits(before, after)
+	edits, err := diff.CalcMonacoEdits(before, after)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("%+v", edits)
+	bytes, err := json.MarshalIndent(edits, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("%s", bytes)
 }

@@ -1,19 +1,15 @@
-package vscode
+package monaco
 
-//https://microsoft.github.io/monaco-editor/docs.html#interfaces/IRange.html
+// https://microsoft.github.io/monaco-editor/docs.html#interfaces/IRange.html
 type Range struct {
-	StarLineNumber int
-	StartColumn    int
-	EndLineNumber  int
-	EndColumn      int
+	StartColumn     int `json:"startColumn"`
+	StartLineNumber int `json:"startLineNumber"`
+	EndColumn       int `json:"endColumn"`
+	EndLineNumber   int `json:"endLineNumber"`
 }
 
-// represents Monaco's IIdentifiedSingleEditOperation
-//   https://microsoft.github.io/monaco-editor/docs.html#interfaces/editor.IIdentifiedSingleEditOperation.html
-type EditOperation struct {
-	Id    string
-	Range Range
-	Text  string
+// https://microsoft.github.io/monaco-editor/docs.html#interfaces/editor.ISingleEditOperation.html#range
+type SingleEditOperation struct {
+	Text  string `json:"text"`
+	Range Range  `json:"range"`
 }
-
-//https://microsoft.github.io/monaco-editor/docs.html#interfaces/editor.IStandaloneCodeEditor.html#executeEdits

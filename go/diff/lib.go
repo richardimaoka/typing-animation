@@ -3,6 +3,7 @@ package diff
 import (
 	"fmt"
 
+	"github.com/richardimaoka/typing-animation/go/edit/monaco"
 	"github.com/richardimaoka/typing-animation/go/edit/vscode"
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
@@ -35,6 +36,17 @@ func CalcEdits(before, after string) ([]vscode.Edit, error) {
 	edits, err := stack.CalcEdits()
 	if err != nil {
 		return nil, fmt.Errorf("diff.CalcEdits failed, %s", err)
+	}
+
+	return edits, nil
+}
+
+func CalcMonacoEdits(before, after string) ([]monaco.SingleEditOperation, error) {
+	stack := createStack(before, after)
+
+	edits, err := stack.CalcMonacoEdits()
+	if err != nil {
+		return nil, fmt.Errorf("diff.CalcMonacoEdits failed, %s", err)
 	}
 
 	return edits, nil
