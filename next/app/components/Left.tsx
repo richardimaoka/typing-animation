@@ -1,12 +1,8 @@
 "use client";
 
+import { CommitData } from "@/api/types";
+import { useRouter } from "next/navigation";
 import styles from "./Left.module.css";
-import { useRouter, useSearchParams } from "next/navigation";
-
-type CommitData = {
-  hash: string;
-  message: string;
-};
 
 interface Props {
   commits?: CommitData[];
