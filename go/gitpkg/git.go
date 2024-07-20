@@ -9,7 +9,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
-func openOrClone(orgname, reponame string) (*git.Repository, error) {
+func OpenOrClone(orgname, reponame string) (*git.Repository, error) {
 	localPath := localRepoPath(orgname, reponame)
 
 	repo, err := git.PlainOpen(localPath)
@@ -64,7 +64,7 @@ func FileContentsInCommit(repo *git.Repository, hashString, filePath string) (st
 }
 
 func RepoFiles(orgname, reponame string) ([]string, error) {
-	repo, err := openOrClone(orgname, reponame)
+	repo, err := OpenOrClone(orgname, reponame)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +93,7 @@ func RepoFiles(orgname, reponame string) ([]string, error) {
 }
 
 func RepoFileContents(orgname, reponame, filePath, commitHashStr string) (string, error) {
-	repo, err := openOrClone(orgname, reponame)
+	repo, err := OpenOrClone(orgname, reponame)
 	if err != nil {
 		return "", err
 	}

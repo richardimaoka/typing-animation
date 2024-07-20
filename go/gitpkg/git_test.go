@@ -13,7 +13,7 @@ func TestEdits(t *testing.T) {
 	reponame := "cobra"
 	filePath := "command.go"
 
-	repo, err := openOrClone(orgname, reponame)
+	repo, err := OpenOrClone(orgname, reponame)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -124,7 +124,7 @@ func TestDebug(t *testing.T) {
 	reponame := "cobra"
 	filePath := "command.go"
 
-	repo, err := openOrClone(orgname, reponame)
+	repo, err := OpenOrClone(orgname, reponame)
 	if err != nil {
 		t.Fatal(err)
 	}
