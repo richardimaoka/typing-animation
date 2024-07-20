@@ -8,27 +8,36 @@ export async function getFiles(
   if (!orgname) {
     return undefined;
   }
+
   if (!reponame) {
     return undefined;
   }
+
   if (!branch) {
     return undefined;
   }
 
-  return ["a.go", "b.go", "c.go"];
+  return undefined; //[]; //"a.go", "b.go", "c.go"];
 }
 
 export async function getCommits(
   orgname: string | undefined,
   reponame: string | undefined,
+  branch: string | undefined,
   filepath: string | undefined
 ): Promise<CommitData[] | undefined> {
   if (!orgname) {
     return undefined;
   }
+
   if (!reponame) {
     return undefined;
   }
+
+  if (!branch) {
+    return undefined;
+  }
+
   if (!filepath) {
     return undefined;
   }

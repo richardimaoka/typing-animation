@@ -163,19 +163,17 @@ export function Left(props: Props) {
       <label htmlFor="filepath" className={styles.label}>
         file path
       </label>
-      <input
-        id="filepath"
-        className={styles.input}
-        placeholder="{filepath}"
-        onBlur={(e) => {
-          onFilePathChange(e.target.value);
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            onFilePathChange(e.currentTarget.value);
-          }
-        }}
-      />
+      <select id="filepath">
+        {props.files ? (
+          props.files.map((fpath) => (
+            <option key={fpath} value={fpath}>
+              {fpath}
+            </option>
+          ))
+        ) : (
+          <option disabled>no option is available</option>
+        )}
+      </select>
 
       <label className={styles.label + " " + styles.top}>commits</label>
       <fieldset className={styles.commits}>

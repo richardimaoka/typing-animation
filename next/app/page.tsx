@@ -26,7 +26,7 @@ export default async function Page(props: Props) {
   const filepath = retrieveParam(props.searchParams.filepath) || "main";
 
   const files = await getFiles(orgname, reponame, branch);
-  const commits = await getCommits(orgname, reponame, branch);
+  const commits = await getCommits(orgname, reponame, branch, filepath);
 
   return (
     <div className={styles.component}>
