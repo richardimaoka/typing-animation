@@ -5,8 +5,10 @@ import (
 	"strings"
 )
 
-// Calculate the edit's end position, offset by text
-// Regardless of edit type, either insert nor deletion, edit end position is same.
+// Calculate the edit text's range end position.
+//
+// Regardless of the edit type, either insert, equal nor deletion, the end position is same,
+// because it is the end of the text range, *NOT* the cursor position after edit.
 //
 //  1. If single line
 //     text = "abcde", then offset pos = Position{ Line: current line, Char: current char + 5 }
@@ -17,7 +19,7 @@ import (
 //     ------------12345
 //
 // newText may contain '\n'
-func editEndPosition(currentPos Position, text string) (Position, error) {
+func editRangeEnd(currentPos Position, text string) (Position, error) {
 	lines := strings.Split(text, "\n")
 
 	if len(lines) == 1 {
@@ -50,22 +52,22 @@ func editEndPosition(currentPos Position, text string) (Position, error) {
 }
 
 func diffToEdit(currentPos Position, diff Diff) (Edit, Position, error) {
-	// regardless of diff type, edit end position is same
-	editEndPos, err := editEndPosition(currentPos, diff.Text)
+	// regardless of diff type, range end position is same
+	rangeEndPos, err := editRangeEnd(currentPos, diff.Text)
 	if err != nil {
 		return EditInsert{}, Position{}, err
 	}
 
 	switch diff.Type {
 	case DiffInsert:
-		return EditInsert{diff.Text, currentPos}, editEndPos, nil
+		return EditInsert{diff.Text, currentPos}, rangeEndPos, nil
 
 	case DiffEqual:
-		return nil, editEndPos, nil
+		return nil, rangeEndPos, nil
 
 	case DiffDelete:
 		// Return the original currentPos, because the cursor doesn't move after deletion
-		return EditDelete{diff.Text, Range{Start: currentPos, End: editEndPos}}, currentPos, nil
+		return EditDelete{diff.Text, Range{Start: currentPos, End: rangeEndPos}}, currentPos, nil
 
 	default:
 		return nil, Position{}, fmt.Errorf("diff type = %d is invalid", diff.Type)

@@ -21,7 +21,7 @@ func TestEditEndPosition(t *testing.T) {
 
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
-			result, err := editEndPosition(c.currentPos, c.newText)
+			result, err := editRangeEnd(c.currentPos, c.newText)
 			if err != nil {
 				if c.err {
 					return // expected error
