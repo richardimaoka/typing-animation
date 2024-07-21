@@ -26,6 +26,9 @@ importers:
       eslint-config-next:
         specifier: 13.4.13
         version: 13.4.13(eslint@8.46.0)(typescript@5.1.6)
+      monaco-editor:
+        specifier: ^0.50.0
+        version: 0.50.0
       next:
         specifier: 13.4.13
         version: 13.4.13(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
