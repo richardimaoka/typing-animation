@@ -28,5 +28,135 @@
       "endLineNumber": 31
     },
     "operation": "Delete"
+  },
+  {
+    "text": "mmand",
+    "range": {
+      "startColumn": 12,
+      "startLineNumber": 31,
+      "endColumn": 12,
+      "endLineNumber": 31
+    },
+    "operation": "Insert"
+  },
+  {
+    "text": "eq",
+    "range": {
+      "startColumn": 18,
+      "startLineNumber": 31,
+      "endColumn": 18,
+      "endLineNumber": 31
+    },
+    "operation": "Insert"
+  },
+  {
+    "text": "",
+    "range": {
+      "startColumn": 21,
+      "startLineNumber": 31,
+      "endColumn": 26,
+      "endLineNumber": 31
+    },
+    "operation": "Delete"
+  },
+  {
+    "text": "ir",
+    "range": {
+      "startColumn": 21,
+      "startLineNumber": 31,
+      "endColumn": 21,
+      "endLineNumber": 31
+    },
+    "operation": "Insert"
+  },
+  {
+    "text": "d",
+    "range": {
+      "startColumn": 24,
+      "startLineNumber": 31,
+      "endColumn": 24,
+      "endLineNumber": 31
+    },
+    "operation": "Insert"
+  },
+  {
+    "text": "",
+    "range": {
+      "startColumn": 5,
+      "startLineNumber": 32,
+      "endColumn": 6,
+      "endLineNumber": 32
+    },
+    "operation": "Delete"
+  },
+  {
+    "text": "ErrSubC",
+    "range": {
+      "startColumn": 5,
+      "startLineNumber": 32,
+      "endColumn": 5,
+      "endLineNumber": 32
+    },
+    "operation": "Insert"
+  },
+  {
+    "text": "",
+    "range": {
+      "startColumn": 13,
+      "startLineNumber": 32,
+      "endColumn": 14,
+      "endLineNumber": 32
+    },
+    "operation": "Delete"
+  },
+  {
+    "text": "mmand",
+    "range": {
+      "startColumn": 13,
+      "startLineNumber": 32,
+      "endColumn": 13,
+      "endLineNumber": 32
+    },
+    "operation": "Insert"
+  },
+  {
+    "text": "eq",
+    "range": {
+      "startColumn": 19,
+      "startLineNumber": 32,
+      "endColumn": 19,
+      "endLineNumber": 32
+    },
+    "operation": "Insert"
+  },
+  {
+    "text": "",
+    "range": {
+      "startColumn": 22,
+      "startLineNumber": 32,
+      "endColumn": 27,
+      "endLineNumber": 32
+    },
+    "operation": "Delete"
+  },
+  {
+    "text": "ir",
+    "range": {
+      "startColumn": 22,
+      "startLineNumber": 32,
+      "endColumn": 22,
+      "endLineNumber": 32
+    },
+    "operation": "Insert"
+  },
+  {
+    "text": "d",
+    "range": {
+      "startColumn": 25,
+      "startLineNumber": 32,
+      "endColumn": 25,
+      "endLineNumber": 32
+    },
+    "operation": "Insert"
   }
 ]
