@@ -1,0 +1,392 @@
+[
+  {
+    "text": "",
+    "range": {
+      "startColumn": 4,
+      "startLineNumber": 31,
+      "endColumn": 5,
+      "endLineNumber": 31
+    },
+    "operation": "Delete"
+  },
+  {
+    "text": "ErrSubC",
+    "range": {
+      "startColumn": 4,
+      "startLineNumber": 31,
+      "endColumn": 4,
+      "endLineNumber": 31
+    },
+    "operation": "Insert"
+  },
+  {
+    "text": "",
+    "range": {
+      "startColumn": 12,
+      "startLineNumber": 31,
+      "endColumn": 13,
+      "endLineNumber": 31
+    },
+    "operation": "Delete"
+  },
+  {
+    "text": "mmand",
+    "range": {
+      "startColumn": 12,
+      "startLineNumber": 31,
+      "endColumn": 12,
+      "endLineNumber": 31
+    },
+    "operation": "Insert"
+  },
+  {
+    "text": "eq",
+    "range": {
+      "startColumn": 18,
+      "startLineNumber": 31,
+      "endColumn": 18,
+      "endLineNumber": 31
+    },
+    "operation": "Insert"
+  },
+  {
+    "text": "",
+    "range": {
+      "startColumn": 21,
+      "startLineNumber": 31,
+      "endColumn": 26,
+      "endLineNumber": 31
+    },
+    "operation": "Delete"
+  },
+  {
+    "text": "ir",
+    "range": {
+      "startColumn": 21,
+      "startLineNumber": 31,
+      "endColumn": 21,
+      "endLineNumber": 31
+    },
+    "operation": "Insert"
+  },
+  {
+    "text": "d",
+    "range": {
+      "startColumn": 24,
+      "startLineNumber": 31,
+      "endColumn": 24,
+      "endLineNumber": 31
+    },
+    "operation": "Insert"
+  },
+  {
+    "text": "",
+    "range": {
+      "startColumn": 5,
+      "startLineNumber": 32,
+      "endColumn": 6,
+      "endLineNumber": 32
+    },
+    "operation": "Delete"
+  },
+  {
+    "text": "ErrSubC",
+    "range": {
+      "startColumn": 5,
+      "startLineNumber": 32,
+      "endColumn": 5,
+      "endLineNumber": 32
+    },
+    "operation": "Insert"
+  },
+  {
+    "text": "",
+    "range": {
+      "startColumn": 13,
+      "startLineNumber": 32,
+      "endColumn": 14,
+      "endLineNumber": 32
+    },
+    "operation": "Delete"
+  },
+  {
+    "text": "mmand",
+    "range": {
+      "startColumn": 13,
+      "startLineNumber": 32,
+      "endColumn": 13,
+      "endLineNumber": 32
+    },
+    "operation": "Insert"
+  },
+  {
+    "text": "eq",
+    "range": {
+      "startColumn": 19,
+      "startLineNumber": 32,
+      "endColumn": 19,
+      "endLineNumber": 32
+    },
+    "operation": "Insert"
+  },
+  {
+    "text": "",
+    "range": {
+      "startColumn": 22,
+      "startLineNumber": 32,
+      "endColumn": 27,
+      "endLineNumber": 32
+    },
+    "operation": "Delete"
+  },
+  {
+    "text": "ir",
+    "range": {
+      "startColumn": 22,
+      "startLineNumber": 32,
+      "endColumn": 22,
+      "endLineNumber": 32
+    },
+    "operation": "Insert"
+  },
+  {
+    "text": "d",
+    "range": {
+      "startColumn": 25,
+      "startLineNumber": 32,
+      "endColumn": 25,
+      "endLineNumber": 32
+    },
+    "operation": "Insert"
+  },
+  {
+    "text": "",
+    "range": {
+      "startColumn": 7,
+      "startLineNumber": 235,
+      "endColumn": 10,
+      "endLineNumber": 235
+    },
+    "operation": "Delete"
+  },
+  {
+    "text": "In",
+    "range": {
+      "startColumn": 7,
+      "startLineNumber": 235,
+      "endColumn": 7,
+      "endLineNumber": 235
+    },
+    "operation": "Insert"
+  },
+  {
+    "text": "",
+    "range": {
+      "startColumn": 4,
+      "startLineNumber": 304,
+      "endColumn": 7,
+      "endLineNumber": 304
+    },
+    "operation": "Delete"
+  },
+  {
+    "text": "In",
+    "range": {
+      "startColumn": 4,
+      "startLineNumber": 304,
+      "endColumn": 4,
+      "endLineNumber": 304
+    },
+    "operation": "Insert"
+  },
+  {
+    "text": "",
+    "range": {
+      "startColumn": 11,
+      "startLineNumber": 304,
+      "endColumn": 14,
+      "endLineNumber": 304
+    },
+    "operation": "Delete"
+  },
+  {
+    "text": "in",
+    "range": {
+      "startColumn": 11,
+      "startLineNumber": 304,
+      "endColumn": 11,
+      "endLineNumber": 304
+    },
+    "operation": "Insert"
+  },
+  {
+    "text": "",
+    "range": {
+      "startColumn": 10,
+      "startLineNumber": 793,
+      "endColumn": 11,
+      "endLineNumber": 793
+    },
+    "operation": "Delete"
+  },
+  {
+    "text": "ErrSubC",
+    "range": {
+      "startColumn": 10,
+      "startLineNumber": 793,
+      "endColumn": 10,
+      "endLineNumber": 793
+    },
+    "operation": "Insert"
+  },
+  {
+    "text": "",
+    "range": {
+      "startColumn": 18,
+      "startLineNumber": 793,
+      "endColumn": 19,
+      "endLineNumber": 793
+    },
+    "operation": "Delete"
+  },
+  {
+    "text": "mmand",
+    "range": {
+      "startColumn": 18,
+      "startLineNumber": 793,
+      "endColumn": 18,
+      "endLineNumber": 793
+    },
+    "operation": "Insert"
+  },
+  {
+    "text": "eq",
+    "range": {
+      "startColumn": 24,
+      "startLineNumber": 793,
+      "endColumn": 24,
+      "endLineNumber": 793
+    },
+    "operation": "Insert"
+  },
+  {
+    "text": "",
+    "range": {
+      "startColumn": 27,
+      "startLineNumber": 793,
+      "endColumn": 32,
+      "endLineNumber": 793
+    },
+    "operation": "Delete"
+  },
+  {
+    "text": "ir",
+    "range": {
+      "startColumn": 27,
+      "startLineNumber": 793,
+      "endColumn": 27,
+      "endLineNumber": 793
+    },
+    "operation": "Insert"
+  },
+  {
+    "text": "d",
+    "range": {
+      "startColumn": 30,
+      "startLineNumber": 793,
+      "endColumn": 30,
+      "endLineNumber": 793
+    },
+    "operation": "Insert"
+  },
+  {
+    "text": "",
+    "range": {
+      "startColumn": 13,
+      "startLineNumber": 930,
+      "endColumn": 14,
+      "endLineNumber": 930
+    },
+    "operation": "Delete"
+  },
+  {
+    "text": "ErrSubC",
+    "range": {
+      "startColumn": 13,
+      "startLineNumber": 930,
+      "endColumn": 13,
+      "endLineNumber": 930
+    },
+    "operation": "Insert"
+  },
+  {
+    "text": "",
+    "range": {
+      "startColumn": 21,
+      "startLineNumber": 930,
+      "endColumn": 22,
+      "endLineNumber": 930
+    },
+    "operation": "Delete"
+  },
+  {
+    "text": "mmand",
+    "range": {
+      "startColumn": 21,
+      "startLineNumber": 930,
+      "endColumn": 21,
+      "endLineNumber": 930
+    },
+    "operation": "Insert"
+  },
+  {
+    "text": "eq",
+    "range": {
+      "startColumn": 27,
+      "startLineNumber": 930,
+      "endColumn": 27,
+      "endLineNumber": 930
+    },
+    "operation": "Insert"
+  },
+  {
+    "text": "",
+    "range": {
+      "startColumn": 30,
+      "startLineNumber": 930,
+      "endColumn": 35,
+      "endLineNumber": 930
+    },
+    "operation": "Delete"
+  },
+  {
+    "text": "ir",
+    "range": {
+      "startColumn": 30,
+      "startLineNumber": 930,
+      "endColumn": 30,
+      "endLineNumber": 930
+    },
+    "operation": "Insert"
+  },
+  {
+    "text": "d",
+    "range": {
+      "startColumn": 33,
+      "startLineNumber": 930,
+      "endColumn": 33,
+      "endLineNumber": 930
+    },
+    "operation": "Insert"
+  },
+  {
+    "text": "\n// ValidateArgs validates arguments",
+    "range": {
+      "startColumn": 1,
+      "startLineNumber": 949,
+      "endColumn": 1,
+      "endLineNumber": 949
+    },
+    "operation": "Insert"
+  }
+]

@@ -36,6 +36,7 @@ export function useEditSequence(
         /**
          * If edits are non-empty
          */
+        console.log("edits are non empty");
         if (editSequence.id !== lastEditID.current) {
           // clear previous edits upon props change
           if (lastEditID.current !== "") {
@@ -54,6 +55,7 @@ export function useEditSequence(
         /**
          * Else if edits are empty
          */
+        console.log("edits are empty", edits);
 
         // clear previous edits
         executeEditCallback(editorInstance, () => {

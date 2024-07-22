@@ -1,6 +1,5 @@
-import { SourceCodeEditor } from "./monaco/SourceCodeEditor";
-import styles from "./Right.module.css";
 import fs from "node:fs";
+import { EditOperation, SourceCodeEditor } from "./monaco/SourceCodeEditor";
 
 interface Props {}
 
@@ -11,18 +10,21 @@ export async function Right(props: Props) {
   );
 
   const editsText = fs.readFileSync(
-    process.cwd() + "/app/components/data/51f06c7-9334a46.edits.json",
+    process.cwd() + "/app/components/data/9334a46-51f06c7.edits.json",
     "utf8"
   );
-
-  const edits = JSON.parse(editsText);
+  const edits = JSON.parse(editsText) as EditOperation[];
+  console.log("edits", edits);
 
   return (
     <SourceCodeEditor
       editorText={editorText}
       language="go"
       typingAnimation={{
-        editSequence: edits,
+        editSequence: {
+          id: "aaa",
+          edits: edits,
+        },
         newEditorText: "",
       }}
     />

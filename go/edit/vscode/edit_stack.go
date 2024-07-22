@@ -60,15 +60,14 @@ func (s *EditStack) CalcMonacoEdits() ([]monaco.SingleEditOperation, error) {
 			return nil, err
 		}
 
-		mRange := monaco.Range{
-			StartColumn:     currentPos.Character,
-			StartLineNumber: currentPos.Line,
-			EndColumn:       rangeEndPos.Character,
-			EndLineNumber:   rangeEndPos.Line,
-		}
-
 		switch diff.Type {
 		case DiffInsert:
+			mRange := monaco.Range{
+				StartColumn:     currentPos.Character + 1,
+				StartLineNumber: currentPos.Line + 1,
+				EndColumn:       currentPos.Character + 1,
+				EndLineNumber:   currentPos.Line + 1,
+			}
 			edits = append(edits, monaco.SingleEditOperation{Text: diff.Text, Range: mRange, Operation: "Insert"})
 			currentPos = rangeEndPos
 
@@ -76,6 +75,12 @@ func (s *EditStack) CalcMonacoEdits() ([]monaco.SingleEditOperation, error) {
 			currentPos = rangeEndPos
 
 		case DiffDelete:
+			mRange := monaco.Range{
+				StartColumn:     currentPos.Character + 1,
+				StartLineNumber: currentPos.Line + 1,
+				EndColumn:       rangeEndPos.Character + 1,
+				EndLineNumber:   rangeEndPos.Line + 1,
+			}
 			edits = append(edits, monaco.SingleEditOperation{Text: "" /*empty text for delete*/, Range: mRange, Operation: "Delete"})
 			// currentPos doesn't move after delete
 

@@ -1,0 +1,32 @@
+[
+  {
+    "text": "",
+    "range": {
+      "startColumn": 4,
+      "startLineNumber": 31,
+      "endColumn": 5,
+      "endLineNumber": 31
+    },
+    "operation": "Delete"
+  },
+  {
+    "text": "ErrSubC",
+    "range": {
+      "startColumn": 4,
+      "startLineNumber": 31,
+      "endColumn": 4,
+      "endLineNumber": 31
+    },
+    "operation": "Insert"
+  },
+  {
+    "text": "",
+    "range": {
+      "startColumn": 12,
+      "startLineNumber": 31,
+      "endColumn": 13,
+      "endLineNumber": 31
+    },
+    "operation": "Delete"
+  }
+]
