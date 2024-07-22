@@ -2,6 +2,7 @@ import { getCommits, getFiles } from "@/api/api";
 import { Left } from "./components/Left";
 import styles from "./page.module.css";
 import { promises as fs } from "fs";
+import { Right } from "./components/Right";
 
 interface Props {
   params: { slug: string }; // for dynamic routes only
@@ -38,7 +39,7 @@ export default async function Page(props: Props) {
         filepath={filepath}
         commits={commits}
       />
-      <div>right</div>
+      <Right />
     </div>
   );
 }
