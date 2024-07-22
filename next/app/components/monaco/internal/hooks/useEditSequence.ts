@@ -99,6 +99,8 @@ function executeEdits(
     executeEditCallback(editorInstance, () => {
       // Scroll vertically or horizontally as necessary and reveal a range.
       editorInstance.revealRangeInCenter(edits[at].range);
+      // Set the primary selection of the editor. This will remove any secondary cursors.
+      editorInstance.setSelection(edits[at].range);
 
       const result = editorInstance.executeEdits("", [edits[at]]);
       if (!result) {
