@@ -36,7 +36,6 @@ export function useEditSequence(
         /**
          * If edits are non-empty
          */
-        console.log("edits are non empty");
         if (editSequence.id !== lastEditID.current) {
           // clear previous edits upon props change
           if (lastEditID.current !== "") {
@@ -55,7 +54,6 @@ export function useEditSequence(
         /**
          * Else if edits are empty
          */
-        console.log("edits are empty", edits);
 
         // clear previous edits
         executeEditCallback(editorInstance, () => {
@@ -99,6 +97,9 @@ function executeEdits(
 
   function executeAtomicEdit(at: number) {
     executeEditCallback(editorInstance, () => {
+      // Scroll vertically or horizontally as necessary and reveal a range.
+      editorInstance.revealRangeInCenter(edits[at].range);
+
       const result = editorInstance.executeEdits("", [edits[at]]);
       if (!result) {
         // TODO: throw error to trigger error.tsx
