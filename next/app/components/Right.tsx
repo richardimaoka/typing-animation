@@ -14,7 +14,6 @@ export async function Right(props: Props) {
     "utf8"
   );
   const edits = JSON.parse(editsText) as EditOperation[];
-  console.log("edits", edits);
 
   return (
     <SourceCodeEditor
