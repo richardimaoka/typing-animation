@@ -1,4 +1,5 @@
 import { CommitData } from "./types";
+import fs from "node:fs";
 
 export async function getFiles(
   orgname: string | undefined,
@@ -15,6 +16,16 @@ export async function getFiles(
 
   if (!branch) {
     return undefined;
+  }
+
+  if (orgname === "spf13" && reponame === "cobra") {
+    const fileContents = fs.readFileSync(
+      process.cwd() + "/api/files.json",
+      "utf8"
+    );
+    const files = JSON.parse(fileContents) as string[];
+
+    return files;
   }
 
   return undefined; //[]; //"a.go", "b.go", "c.go"];
