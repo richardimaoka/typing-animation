@@ -8,8 +8,11 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
+// private top-level variable, to manipulate in testing within the same package
+var githubDir string = "/tmp/github.com"
+
 func localRepoPath(orgname, reponame string) string {
-	return fmt.Sprintf("/tmp/github.com/%s/%s", orgname, reponame)
+	return fmt.Sprintf("%s/%s/%s", githubDir, orgname, reponame)
 }
 
 func toHash(hashString string) (plumbing.Hash, error) {

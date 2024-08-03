@@ -9,6 +9,33 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
+func Open(orgname, reponame string) (*git.Repository, error) {
+	errorPrefix := "gitpkg.Open failed"
+
+	localPath := localRepoPath(orgname, reponame)
+	repo, err := git.PlainOpen(localPath)
+	if err != nil {
+		return nil, fmt.Errorf("%s, %s", errorPrefix, err)
+	}
+
+	return repo, nil
+}
+
+func Clone(orgname, reponame string) (*git.Repository, error) {
+	errorPrefix := "gitpkg.Clone failed"
+
+	localPath := localRepoPath(orgname, reponame)
+	repo, err := git.PlainClone(localPath, false, &git.CloneOptions{
+		URL:      fmt.Sprintf("https://github.com/%s/%s", orgname, reponame),
+		Progress: os.Stdout,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("%s, %s", errorPrefix, err)
+	}
+
+	return repo, nil
+}
+
 func OpenOrClone(orgname, reponame string) (*git.Repository, error) {
 	localPath := localRepoPath(orgname, reponame)
 

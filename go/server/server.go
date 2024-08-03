@@ -27,6 +27,39 @@ func writeError(w http.ResponseWriter, statusCode int, err error) {
 	}
 }
 
+func HandleGET_Repo(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func HandlePOST_Repo(w http.ResponseWriter, r *http.Request) {
+	// Check path parameters
+	orgname := r.PathValue("orgname")
+	reponame := r.PathValue("reponame")
+	if orgname == "" || reponame == "" {
+		writeError(w, http.StatusBadRequest, fmt.Errorf("orgname = '%s', reponame = '%s', but neither allows an empty value", orgname, reponame))
+		return
+	}
+
+	// Path parameter checks passed
+	log.Printf("POST /repos/%s/%s called", orgname, reponame)
+
+	// Start git clone in goroutine
+	var err error
+
+	// Success
+	body := struct {
+		Orgname string `json:"orgname"`
+		Repo    string `json:"repo"`
+	}{orgname, reponame}
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(body)
+	if err != nil {
+		log.Printf("Error upon encoding body, %+v, to json, %s", body, err)
+		writeError(w, http.StatusInternalServerError, fmt.Errorf("internal error"))
+		return
+	}
+}
+
 func HandleRepoFiles(w http.ResponseWriter, r *http.Request) {
 	// Check path parameters
 	orgname := r.PathValue("orgname")
@@ -106,6 +139,8 @@ func HandleSingleFile(w http.ResponseWriter, r *http.Request) {
 
 func Run() {
 	mux := http.NewServeMux()
+	mux.HandleFunc("POST /{orgname}/{reponame}", HandlePOST_Repo)
+	mux.HandleFunc("GET /{orgname}/{reponame}", HandleGET_Repo)
 	mux.HandleFunc("GET /{orgname}/{reponame}/files", HandleRepoFiles)
 	mux.HandleFunc("GET /{orgname}/{reponame}/files/{filepath...}", HandleSingleFile)
 
