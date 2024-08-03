@@ -4,6 +4,7 @@ import { CommitData } from "@/api/types";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "./Left.module.css";
 import { OrgNameField } from "./fields/OrgNameField";
+import { RepositoryNameField } from "./fields/RepositoryNameField";
 
 interface Props {
   commits?: CommitData[];
@@ -78,29 +79,13 @@ export function Left(props: Props) {
     <div className={styles.component}>
       <form className={styles.repo}>
         <OrgNameField orgname={props.orgname} />
-
-        <label htmlFor="reponame" className={styles.label}>
-          GitHub repository
-        </label>
-        <input
-          id="reponame"
-          className={styles.input}
-          defaultValue={props.reponame}
-          placeholder="{reponame}"
-          onBlur={(e) => {
-            onReponameChange(e.target.value);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              onReponameChange(e.currentTarget.value);
-            }
-          }}
-        />
+        <RepositoryNameField reponame={props.reponame} />
 
         <label className={styles.label}>GitHub URL</label>
         <div className={styles.grey}>
           https://github.com/{props.orgname || "{orgname}"}/
           {props.reponame || "{reponame}"}
+          <button>ready</button>
         </div>
       </form>
 

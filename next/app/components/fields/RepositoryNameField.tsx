@@ -1,13 +1,13 @@
 "use client";
 
-import styles from "./OrgNameField.module.css";
+import styles from "./RepositoryNameField.module.css";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
 interface Props {
-  orgname: string | undefined;
+  reponame: string | undefined;
 }
 
-export function OrgNameField(props: Props) {
+export function RepositoryNameField(props: Props) {
   // https://github.com/vercel/next.js/discussions/47583
   const router = useRouter();
   const pathname = usePathname();
@@ -17,8 +17,7 @@ export function OrgNameField(props: Props) {
     // now you got a read/write object
     const current = new URLSearchParams(Array.from(searchParams.entries())); // -> has to use this form
 
-    // update as necessary
-    const paramName = "orgname";
+    const paramName = "reponame";
     if (!newValue) {
       current.delete(paramName);
     } else {
@@ -35,17 +34,15 @@ export function OrgNameField(props: Props) {
 
   return (
     <>
-      <label htmlFor="orgname" className={styles.label}>
-        <div>GitHub organization</div>
-        <div>(user)</div>
+      <label htmlFor="reponame" className={styles.label}>
+        <div>GitHub repository</div>
       </label>
       <input
-        id="orgname"
+        id="reponame"
         className={styles.input}
-        defaultValue={props.orgname}
-        placeholder="{orgname}"
+        defaultValue={props.reponame}
+        placeholder="{reponame}"
         onBlur={(e) => {
-          console.log("onBlur params update");
           updateSearchParams(e.target.value.trim());
         }}
         onKeyDown={(e) => {
