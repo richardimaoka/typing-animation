@@ -163,7 +163,12 @@ export function Left(props: Props) {
       <label htmlFor="filepath" className={styles.label}>
         file path
       </label>
-      <select id="filepath">
+      <select
+        id="filepath"
+        onChange={(e) => {
+          onFilePathChange(e.target.value);
+        }}
+      >
         {props.files ? (
           props.files.map((fpath) => (
             <option key={fpath} value={fpath}>
