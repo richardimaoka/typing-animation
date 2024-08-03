@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import styles from "./Left.module.css";
 import { OrgNameField } from "./fields/OrgNameField";
 import { RepositoryNameField } from "./fields/RepositoryNameField";
+import { GitHubURLDisplay } from "./fields/GitHubURLDisplay";
 
 interface Props {
   commits?: CommitData[];
@@ -50,11 +51,6 @@ export function Left(props: Props) {
     }
   }
 
-  function onReponameChange(newRepo: string) {
-    const href = newPath(props.orgname, newRepo, props.branch, props.filepath);
-    router.push(href);
-  }
-
   function onFilePathChange(newFilePath: string) {
     const href = newPath(
       props.orgname,
@@ -80,13 +76,7 @@ export function Left(props: Props) {
       <form className={styles.repo}>
         <OrgNameField orgname={props.orgname} />
         <RepositoryNameField reponame={props.reponame} />
-
-        <label className={styles.label}>GitHub URL</label>
-        <div className={styles.grey}>
-          https://github.com/{props.orgname || "{orgname}"}/
-          {props.reponame || "{reponame}"}
-          <button>ready</button>
-        </div>
+        <GitHubURLDisplay orgname={props.orgname} reponame={props.reponame} />
       </form>
 
       <div className={styles.lower}>

@@ -1,6 +1,8 @@
 import { CommitData } from "./types";
 import fs from "node:fs";
 
+type RepoStatus = {};
+
 export async function getRepo(
   orgname: string | undefined,
   reponame: string | undefined

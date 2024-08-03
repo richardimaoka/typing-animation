@@ -4,7 +4,7 @@ import styles from "./RepositoryNameField.module.css";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
 interface Props {
-  reponame: string | undefined;
+  reponame?: string;
 }
 
 export function RepositoryNameField(props: Props) {

@@ -4,7 +4,7 @@ import styles from "./OrgNameField.module.css";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
 interface Props {
-  orgname: string | undefined;
+  orgname?: string;
 }
 
 export function OrgNameField(props: Props) {
