@@ -93,7 +93,7 @@ func FileContentsInCommit(repo *git.Repository, hashString, filePath string) (st
 }
 
 func RepoFiles(orgname, reponame string) ([]string, error) {
-	repo, err := OpenOrClone(orgname, reponame)
+	repo, err := Open(orgname, reponame)
 	if err != nil {
 		return nil, err
 	}

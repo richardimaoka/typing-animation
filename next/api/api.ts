@@ -68,6 +68,12 @@ export async function getBranches(
   return undefined; //[]; //"a.go", "b.go", "c.go"];
 }
 
+type FilesData = {
+  orgname: string;
+  repo: string;
+  files: string[];
+};
+
 export async function getFiles(
   orgname: string | undefined,
   reponame: string | undefined,
@@ -85,17 +91,41 @@ export async function getFiles(
     return undefined;
   }
 
-  if (orgname === "spf13" && reponame === "cobra") {
-    const fileContents = fs.readFileSync(
-      process.cwd() + "/api/files.json",
-      "utf8"
+  // For fetch API, try-catch is easier than await-catch,
+  // because await-catch requires you to craft a `Response` variable
+  let response: Response; /* let, instead of const, is easier for try-catch, but make sure you NEVER re-assign to the let variable */
+  try {
+    response = await fetch(
+      `http://localhost:8080/${orgname}/${reponame}/files`,
+      {
+        cache: "no-store",
+      }
     );
-    const files = JSON.parse(fileContents) as string[];
+  } catch (error) {
+    // Only network errors reach here.
+    // (i.e.) HTTP response with an error status (e.g. 500) does NOT come into this catch block
+    console.error("getRepo failed (network error)", error);
 
-    return files;
+    // by using try-catch, we are able to directly return from function
+    return undefined;
   }
 
-  return undefined; //[]; //"a.go", "b.go", "c.go"];
+  if (!response.ok) {
+    return undefined;
+  }
+
+  const jsonData = (await response.json().catch(function (error) {
+    if (error instanceof SyntaxError) {
+      console.log("There was a SyntaxError in returned JSON", error);
+    } else {
+      console.log("There was an upon parsing JSON response", error);
+    }
+    return { status: "error" };
+  })) as FilesData;
+
+  console.log("getFiles successful", jsonData);
+
+  return jsonData.files;
 }
 
 export async function getCommits(
