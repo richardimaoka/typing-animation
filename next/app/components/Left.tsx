@@ -54,11 +54,6 @@ export function Left(props: Props) {
     router.push(href);
   }
 
-  function onOrgnameChange(newOrg: string) {
-    const href = newPath(newOrg, props.reponame, props.branch, props.filepath);
-    router.push(href);
-  }
-
   function onFilePathChange(newFilePath: string) {
     const href = newPath(
       props.orgname,
@@ -81,21 +76,6 @@ export function Left(props: Props) {
 
   return (
     <div className={styles.component}>
-      {/* <label htmlFor="url" className={styles.label}>
-        GitHub repository URL
-      </label>
-      <input
-        id="url"
-        className={styles.input}
-        placeholder="https://github.com/{orgname}/{reponame}"
-        onBlur={(e) => {
-          console.log("blur", e.target.value, e);
-        }}
-        onKeyDown={(e) => {
-          console.log("keydown", e);
-        }}
-      /> */}
-
       <OrgNameField orgname={props.orgname} />
 
       <label htmlFor="reponame" className={styles.label}>
