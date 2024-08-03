@@ -1,13 +1,27 @@
 .component {
-  display: grid;
   width: 50rem;
+}
 
+.repo {
+  display: grid;
   grid-template-columns: 15rem 1fr;
   grid-template-rows:
     auto /* organization */
     auto /* repository */
-    auto /* GitHub URL */
-    20px /* empty space */
+    auto /* GitHub URL */;
+
+  align-items: center; /* do not expand input height */
+  column-gap: 1rem;
+  row-gap: 1rem;
+
+  margin-bottom: 40px;
+}
+
+.lower {
+  display: grid;
+
+  grid-template-columns: 15rem 1fr;
+  grid-template-rows:
     auto /* branch */
     auto /* filepath */
     1fr; /* commits */

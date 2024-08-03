@@ -76,87 +76,85 @@ export function Left(props: Props) {
 
   return (
     <div className={styles.component}>
-      <OrgNameField orgname={props.orgname} />
+      <form className={styles.repo}>
+        <OrgNameField orgname={props.orgname} />
 
-      <label htmlFor="reponame" className={styles.label}>
-        GitHub repository
-      </label>
-      <input
-        id="reponame"
-        className={styles.input}
-        defaultValue={props.reponame}
-        placeholder="{reponame}"
-        onBlur={(e) => {
-          onReponameChange(e.target.value);
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            onReponameChange(e.currentTarget.value);
-          }
-        }}
-      />
+        <label htmlFor="reponame" className={styles.label}>
+          GitHub repository
+        </label>
+        <input
+          id="reponame"
+          className={styles.input}
+          defaultValue={props.reponame}
+          placeholder="{reponame}"
+          onBlur={(e) => {
+            onReponameChange(e.target.value);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              onReponameChange(e.currentTarget.value);
+            }
+          }}
+        />
 
-      <label className={styles.label}>GitHub URL</label>
-      <div className={styles.grey}>
-        https://github.com/{props.orgname || "{orgname}"}/
-        {props.reponame || "{reponame}"}
+        <label className={styles.label}>GitHub URL</label>
+        <div className={styles.grey}>
+          https://github.com/{props.orgname || "{orgname}"}/
+          {props.reponame || "{reponame}"}
+        </div>
+      </form>
+
+      <div className={styles.lower}>
+        <label htmlFor="branch" className={styles.label}>
+          branch
+        </label>
+        <input
+          id="branch"
+          className={styles.input}
+          placeholder="main"
+          defaultValue={props.branch}
+          onBlur={(e) => {
+            onBranchChange(e.target.value);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              onBranchChange(e.currentTarget.value);
+            }
+          }}
+        />
+        <label htmlFor="filepath" className={styles.label}>
+          file path
+        </label>
+        <select
+          id="filepath"
+          onChange={(e) => {
+            onFilePathChange(e.target.value);
+          }}
+        >
+          {props.files ? (
+            props.files.map((fpath) => (
+              <option key={fpath} value={fpath}>
+                {fpath}
+              </option>
+            ))
+          ) : (
+            <option disabled>no option is available</option>
+          )}
+        </select>
+        <label className={styles.label + " " + styles.top}>commits</label>
+        <fieldset className={styles.commits}>
+          {props.commits &&
+            props.commits.map((c) => (
+              <div key={c.hash}>
+                <input type="radio" id={c.hash} name="commit" />
+                <label htmlFor={c.hash}>
+                  <span className={styles.hash}>{c.hash}</span>
+                  <span className={styles.message}>{c.message}</span>
+                </label>
+              </div>
+            ))}
+        </fieldset>
       </div>
-
-      {/* Empty space in CSS grid */}
-      <label />
-      <div></div>
-
-      <label htmlFor="branch" className={styles.label}>
-        branch
-      </label>
-      <input
-        id="branch"
-        className={styles.input}
-        placeholder="main"
-        defaultValue={props.branch}
-        onBlur={(e) => {
-          onBranchChange(e.target.value);
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            onBranchChange(e.currentTarget.value);
-          }
-        }}
-      />
-
-      <label htmlFor="filepath" className={styles.label}>
-        file path
-      </label>
-      <select
-        id="filepath"
-        onChange={(e) => {
-          onFilePathChange(e.target.value);
-        }}
-      >
-        {props.files ? (
-          props.files.map((fpath) => (
-            <option key={fpath} value={fpath}>
-              {fpath}
-            </option>
-          ))
-        ) : (
-          <option disabled>no option is available</option>
-        )}
-      </select>
-
-      <label className={styles.label + " " + styles.top}>commits</label>
-      <fieldset className={styles.commits}>
-        {props.commits &&
-          props.commits.map((c) => (
-            <div key={c.hash}>
-              <input type="radio" id={c.hash} name="commit" />
-              <label htmlFor={c.hash}>
-                <span className={styles.hash}>{c.hash}</span>
-                <span className={styles.message}>{c.message}</span>
-              </label>
-            </div>
-          ))}
-      </fieldset>
     </div>
   );
 }
