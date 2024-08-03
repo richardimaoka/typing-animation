@@ -12,6 +12,8 @@ import (
 func Open(orgname, reponame string) (*git.Repository, error) {
 	errorPrefix := "gitpkg.Open failed"
 
+	// TODO: specific error for org/repo non-existent even in GitHub
+
 	localPath := localRepoPath(orgname, reponame)
 	repo, err := git.PlainOpen(localPath)
 	if err != nil {

@@ -41,6 +41,7 @@ export default async function Page(props: Props) {
         files={files}
         filepath={filepath}
         commits={commits}
+        repoReady={repo.status === "ready"}
       />
       <Right />
     </div>

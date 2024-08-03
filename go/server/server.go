@@ -9,10 +9,10 @@ import (
 	"github.com/richardimaoka/typing-animation/go/gitpkg"
 )
 
-func writeError(w http.ResponseWriter, statusCode int, err error) {
+func writeErrorJson(w http.ResponseWriter, statusCode int, err error) {
 	body := struct {
-		Status  string
-		Message string
+		Status  string `json:"status"`
+		Message string `json:"message"`
 	}{
 		"error",
 		err.Error(),
@@ -28,7 +28,38 @@ func writeError(w http.ResponseWriter, statusCode int, err error) {
 }
 
 func HandleGET_Repo(w http.ResponseWriter, r *http.Request) {
+	// Check path parameters
+	orgname := r.PathValue("orgname")
+	reponame := r.PathValue("reponame")
+	if orgname == "" || reponame == "" {
+		writeErrorJson(w, http.StatusBadRequest, fmt.Errorf("orgname = '%s', reponame = '%s', but neither allows an empty value", orgname, reponame))
+		return
+	}
 
+	// Path parameter checks passed
+	log.Printf("GET /repos/%s/%s called", orgname, reponame)
+
+	// Start git clone in goroutine
+	_, err := gitpkg.Open(orgname, reponame)
+	if err != nil {
+		log.Printf("Repo is not ready, %s", err)
+		writeErrorJson(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	// Success
+	body := struct {
+		Orgname string `json:"orgname"`
+		Repo    string `json:"repo"`
+		Status  string `json:"status"`
+	}{orgname, reponame, "ready"}
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(body)
+	if err != nil {
+		log.Printf("Error upon encoding body, %+v, to json, %s", body, err)
+		writeErrorJson(w, http.StatusInternalServerError, fmt.Errorf("internal error"))
+		return
+	}
 }
 
 func HandlePOST_Repo(w http.ResponseWriter, r *http.Request) {
@@ -36,7 +67,7 @@ func HandlePOST_Repo(w http.ResponseWriter, r *http.Request) {
 	orgname := r.PathValue("orgname")
 	reponame := r.PathValue("reponame")
 	if orgname == "" || reponame == "" {
-		writeError(w, http.StatusBadRequest, fmt.Errorf("orgname = '%s', reponame = '%s', but neither allows an empty value", orgname, reponame))
+		writeErrorJson(w, http.StatusBadRequest, fmt.Errorf("orgname = '%s', reponame = '%s', but neither allows an empty value", orgname, reponame))
 		return
 	}
 
@@ -55,7 +86,7 @@ func HandlePOST_Repo(w http.ResponseWriter, r *http.Request) {
 	err = json.NewEncoder(w).Encode(body)
 	if err != nil {
 		log.Printf("Error upon encoding body, %+v, to json, %s", body, err)
-		writeError(w, http.StatusInternalServerError, fmt.Errorf("internal error"))
+		writeErrorJson(w, http.StatusInternalServerError, fmt.Errorf("internal error"))
 		return
 	}
 }
@@ -65,7 +96,7 @@ func HandleRepoFiles(w http.ResponseWriter, r *http.Request) {
 	orgname := r.PathValue("orgname")
 	reponame := r.PathValue("reponame")
 	if orgname == "" || reponame == "" {
-		writeError(w, http.StatusBadRequest, fmt.Errorf("orgname = '%s', reponame = '%s', but neither allows an empty value", orgname, reponame))
+		writeErrorJson(w, http.StatusBadRequest, fmt.Errorf("orgname = '%s', reponame = '%s', but neither allows an empty value", orgname, reponame))
 		return
 	}
 
@@ -76,7 +107,7 @@ func HandleRepoFiles(w http.ResponseWriter, r *http.Request) {
 	files, err := gitpkg.RepoFiles(orgname, reponame)
 	if err != nil {
 		log.Printf("Error upon getting git files in the repo, %s", err)
-		writeError(w, http.StatusInternalServerError, err)
+		writeErrorJson(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -90,7 +121,7 @@ func HandleRepoFiles(w http.ResponseWriter, r *http.Request) {
 	err = json.NewEncoder(w).Encode(body)
 	if err != nil {
 		log.Printf("Error upon encoding body, %+v, to json, %s", body, err)
-		writeError(w, http.StatusInternalServerError, fmt.Errorf("internal error"))
+		writeErrorJson(w, http.StatusInternalServerError, fmt.Errorf("internal error"))
 		return
 	}
 }
@@ -101,7 +132,7 @@ func HandleSingleFile(w http.ResponseWriter, r *http.Request) {
 	reponame := r.PathValue("reponame")
 	filepath := r.PathValue("filepath")
 	if orgname == "" || reponame == "" || filepath == "" {
-		writeError(
+		writeErrorJson(
 			w,
 			http.StatusBadRequest,
 			fmt.Errorf("orgname = '%s', reponame = '%s', filepath = '%s', but neither allows an empty value", orgname, reponame, filepath),
@@ -118,7 +149,7 @@ func HandleSingleFile(w http.ResponseWriter, r *http.Request) {
 	contents, err := gitpkg.RepoFileContents(orgname, reponame, filepath, commitHash)
 	if err != nil {
 		log.Printf("Error upon getting git file in the repo, %s", err)
-		writeError(w, http.StatusInternalServerError, fmt.Errorf("internal error"))
+		writeErrorJson(w, http.StatusInternalServerError, fmt.Errorf("internal error"))
 		return
 	}
 
@@ -132,7 +163,7 @@ func HandleSingleFile(w http.ResponseWriter, r *http.Request) {
 	err = json.NewEncoder(w).Encode(body)
 	if err != nil {
 		log.Printf("Error upon encoding body, %+v, to json, %s", body, err)
-		writeError(w, http.StatusInternalServerError, fmt.Errorf("internal error"))
+		writeErrorJson(w, http.StatusInternalServerError, fmt.Errorf("internal error"))
 		return
 	}
 }

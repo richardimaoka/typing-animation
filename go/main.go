@@ -1,7 +1,9 @@
 package main
 
-func main() {
-	// server.Run()
+import "github.com/richardimaoka/typing-animation/go/server"
 
-	Experiment()
+func main() {
+	server.Run()
+
+	// Experiment()
 }
