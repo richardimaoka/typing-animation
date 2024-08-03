@@ -15,6 +15,8 @@ export async function Right(props: Props) {
   );
   const edits = JSON.parse(editsText) as EditOperation[];
 
+  return <></>;
+
   return (
     <SourceCodeEditor
       editorText={editorText}

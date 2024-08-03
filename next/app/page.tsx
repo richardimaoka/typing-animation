@@ -14,17 +14,17 @@ interface Props {
   };
 }
 
-function retrieveParam(
+function toParamString(
   param: string | string[] | undefined
 ): string | undefined {
   return typeof param === "string" && param !== "" ? param : undefined;
 }
 
 export default async function Page(props: Props) {
-  const orgname = retrieveParam(props.searchParams.orgname);
-  const reponame = retrieveParam(props.searchParams.reponame);
-  const branch = retrieveParam(props.searchParams.branch) || "main";
-  const filepath = retrieveParam(props.searchParams.filepath) || "main";
+  const orgname = toParamString(props.searchParams.orgname);
+  const reponame = toParamString(props.searchParams.reponame);
+  const branch = toParamString(props.searchParams.branch) || "main";
+  const filepath = toParamString(props.searchParams.filepath) || "main";
 
   const files = await getFiles(orgname, reponame, branch);
   const commits = await getCommits(orgname, reponame, branch, filepath);
