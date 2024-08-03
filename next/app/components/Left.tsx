@@ -1,8 +1,9 @@
 "use client";
 
 import { CommitData } from "@/api/types";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import styles from "./Left.module.css";
+import { OrgNameField } from "./fields/OrgNameField";
 
 interface Props {
   commits?: CommitData[];
@@ -95,24 +96,7 @@ export function Left(props: Props) {
         }}
       /> */}
 
-      <label htmlFor="orgname" className={styles.label}>
-        <div>GitHub organization</div>
-        <div>(user)</div>
-      </label>
-      <input
-        id="orgname"
-        className={styles.input}
-        defaultValue={props.orgname}
-        placeholder="{orgname}"
-        onBlur={(e) => {
-          onOrgnameChange(e.target.value);
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            onOrgnameChange(e.currentTarget.value);
-          }
-        }}
-      />
+      <OrgNameField orgname={props.orgname} />
 
       <label htmlFor="reponame" className={styles.label}>
         GitHub repository

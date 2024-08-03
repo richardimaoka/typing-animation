@@ -1,6 +1,44 @@
 import { CommitData } from "./types";
 import fs from "node:fs";
 
+export async function getRepo(
+  orgname: string | undefined,
+  reponame: string | undefined
+): Promise<string[] | undefined> {
+  if (!orgname) {
+    return undefined;
+  }
+
+  if (!reponame) {
+    return undefined;
+  }
+
+  if (orgname === "spf13" && reponame === "cobra") {
+    return [""];
+  }
+
+  return undefined; //[]; //"a.go", "b.go", "c.go"];
+}
+
+export async function getBranches(
+  orgname: string | undefined,
+  reponame: string | undefined
+): Promise<string[] | undefined> {
+  if (!orgname) {
+    return undefined;
+  }
+
+  if (!reponame) {
+    return undefined;
+  }
+
+  if (orgname === "spf13" && reponame === "cobra") {
+    return ["main"];
+  }
+
+  return undefined; //[]; //"a.go", "b.go", "c.go"];
+}
+
 export async function getFiles(
   orgname: string | undefined,
   reponame: string | undefined,
