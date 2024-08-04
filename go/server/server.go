@@ -153,6 +153,7 @@ func HandleSingleFile(w http.ResponseWriter, r *http.Request) {
 
 	type CommitData struct {
 		Hash         string `json:"hash"`
+		ShortHash    string `json:"shortHash"`
 		Message      string `json:"message"`
 		ShortMessage string `json:"shortMessage"`
 	}
@@ -166,8 +167,10 @@ func HandleSingleFile(w http.ResponseWriter, r *http.Request) {
 			shortMessage = string(messageInRunes)
 		}
 
+		hash := c.Hash.String()
 		data := CommitData{
-			Hash:         c.Hash.String(),
+			Hash:         hash,
+			ShortHash:    string([]rune(hash)[:7]),
 			Message:      c.Message,
 			ShortMessage: shortMessage,
 		}

@@ -155,6 +155,7 @@ export async function getCommits(
   let response: Response; /* let, instead of const, is easier for try-catch, but make sure you NEVER re-assign to the let variable */
   try {
     const path = decodeURIComponent(filepath);
+    console.log("getCommits", path);
     response = await fetch(
       `http://localhost:8080/${orgname}/${reponame}/files/${path}`,
       {
@@ -174,6 +175,10 @@ export async function getCommits(
     return undefined;
   }
 
+  type FileData = {
+    commits: CommitData[];
+  };
+
   const jsonData = (await response.json().catch(function (error) {
     if (error instanceof SyntaxError) {
       console.log("There was a SyntaxError in returned JSON", error);
@@ -181,9 +186,9 @@ export async function getCommits(
       console.log("There was an upon parsing JSON response", error);
     }
     return { status: "error" };
-  })) as FilesData;
+  })) as FileData;
 
-  console.log("getFiles successful", jsonData);
+  console.log("getCommits successful", jsonData);
 
-  return jsonData.files;
+  return jsonData.commits;
 }

@@ -125,8 +125,8 @@ export function Left(props: Props) {
                 <div key={c.hash}>
                   <input type="radio" id={c.hash} name="commit" />
                   <label htmlFor={c.hash}>
-                    <span className={styles.hash}>{c.hash}</span>
-                    <span className={styles.message}>{c.message}</span>
+                    <span className={styles.hash}>{c.shortHash}</span>
+                    <span className={styles.message}>{c.shortMessage}</span>
                   </label>
                 </div>
               ))}

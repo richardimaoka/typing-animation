@@ -24,7 +24,7 @@ export default async function Page(props: Props) {
   const orgname = toParamString(props.searchParams.orgname);
   const reponame = toParamString(props.searchParams.reponame);
   const branch = toParamString(props.searchParams.branch) || "main";
-  const filepath = toParamString(props.searchParams.filepath) || "main";
+  const filepath = toParamString(props.searchParams.filepath);
 
   const repo = await getRepo(orgname, reponame);
 
