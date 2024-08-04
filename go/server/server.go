@@ -151,17 +151,35 @@ func HandleSingleFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var commitHashes []string
+	type CommitData struct {
+		Hash         string `json:"hash"`
+		Message      string `json:"message"`
+		ShortMessage string `json:"shortMessage"`
+	}
+	var commitDataSlice []CommitData
 	for _, c := range commits {
-		commitHashes = append(commitHashes, c.Hash.String())
+		messageInRunes := []rune(c.Message)
+		var shortMessage string
+		if len(messageInRunes) > 20 {
+			shortMessage = string(messageInRunes[:20]) + "..."
+		} else {
+			shortMessage = string(messageInRunes)
+		}
+
+		data := CommitData{
+			Hash:         c.Hash.String(),
+			Message:      c.Message,
+			ShortMessage: shortMessage,
+		}
+		commitDataSlice = append(commitDataSlice, data)
 	}
 
 	// Success
 	body := struct {
-		Orgname string   `json:"orgname"`
-		Repo    string   `json:"repo"`
-		Commits []string `json:"commits"`
-	}{orgname, reponame, commitHashes}
+		Orgname string       `json:"orgname"`
+		Repo    string       `json:"repo"`
+		Commits []CommitData `json:"commits"`
+	}{orgname, reponame, commitDataSlice}
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(body)
 	if err != nil {
