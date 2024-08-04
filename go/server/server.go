@@ -140,6 +140,8 @@ func HandleSingleFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	commitHash := r.URL.Query().Get("commit")
+
 	// Path parameter checks passed
 	log.Printf("GET /repos/%s/%s/files/%s called", orgname, reponame, filepath)
 

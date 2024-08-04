@@ -1,4 +1,10 @@
-import { getBranches, getCommits, getFiles, getRepo } from "@/api/api";
+import {
+  getBranches,
+  getCommits,
+  getEdits,
+  getFiles,
+  getRepo,
+} from "@/api/api";
 import { Left } from "./components/Left";
 import styles from "./page.module.css";
 import { promises as fs } from "fs";
@@ -31,6 +37,7 @@ export default async function Page(props: Props) {
   const branches = await getBranches(orgname, reponame);
   const files = await getFiles(orgname, reponame, branch);
   const commits = await getCommits(orgname, reponame, branch, filepath);
+  const edits = await getEdits(orgname, reponame, filepath, undefined);
 
   return (
     <div className={styles.component}>
