@@ -140,7 +140,60 @@ func HandleSingleFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Path parameter checks passed
+	log.Printf("GET /repos/%s/%s/files/%s called", orgname, reponame, filepath)
+
+	// Get git repo, then get repo files
+	commits, err := gitpkg.CommitsForFile(orgname, reponame, filepath)
+	if err != nil {
+		log.Printf("Error upon getting git file in the repo, %s", err)
+		writeErrorJson(w, http.StatusInternalServerError, fmt.Errorf("internal error"))
+		return
+	}
+
+	var commitHashes []string
+	for _, c := range commits {
+		commitHashes = append(commitHashes, c.Hash.String())
+	}
+
+	// Success
+	body := struct {
+		Orgname string   `json:"orgname"`
+		Repo    string   `json:"repo"`
+		Commits []string `json:"commits"`
+	}{orgname, reponame, commitHashes}
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(body)
+	if err != nil {
+		log.Printf("Error upon encoding body, %+v, to json, %s", body, err)
+		writeErrorJson(w, http.StatusInternalServerError, fmt.Errorf("internal error"))
+		return
+	}
+}
+
+func HandleSingleCommit(w http.ResponseWriter, r *http.Request) {
+	// Check path parameters
+	orgname := r.PathValue("orgname")
+	reponame := r.PathValue("reponame")
+	filepath := r.PathValue("filepath")
+	if orgname == "" || reponame == "" || filepath == "" {
+		writeErrorJson(
+			w,
+			http.StatusBadRequest,
+			fmt.Errorf("orgname = '%s', reponame = '%s', filepath = '%s', but neither allows an empty value", orgname, reponame, filepath),
+		)
+		return
+	}
+
 	commitHash := r.URL.Query().Get("commit")
+	if commitHash == "" {
+		writeErrorJson(
+			w,
+			http.StatusBadRequest,
+			fmt.Errorf("query parameter commit is missing"),
+		)
+		return
+	}
 
 	// Path parameter checks passed
 	log.Printf("GET /repos/%s/%s/files/%s called", orgname, reponame, filepath)

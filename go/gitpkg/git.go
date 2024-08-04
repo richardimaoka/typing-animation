@@ -70,6 +70,22 @@ func CommitObject(repo *git.Repository, hashString string) (*object.Commit, erro
 	return commit, err
 }
 
+func CommitsForFile(orgname, reponame, filepath string) ([]*object.Commit, error) {
+	errorPrefix := "gitpkg.CommitsForFile failed"
+
+	repo, err := Open(orgname, reponame)
+	if err != nil {
+		return nil, err
+	}
+
+	commits, err := commitsForFileInternal(repo, filepath)
+	if err != nil {
+		return nil, fmt.Errorf("%s, %s", errorPrefix, err)
+	}
+
+	return commits, err
+}
+
 func FileInCommit(repo *git.Repository, hashString, filePath string) (*object.File, error) {
 	errorPrefix := "gitpkg.FileInCommit failed"
 

@@ -38,6 +38,70 @@ func commitObjectInternal(repo *git.Repository, hashString string) (*object.Comm
 	return commit, err
 }
 
+func commitsForFileInternal(repo *git.Repository, filepath string) ([]*object.Commit, error) {
+	// wt, err := repo.Worktree()
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// err = wt.Checkout(&git.CheckoutOptions{
+	// 	Branch: plumbing.ReferenceName(branchName),
+	// })
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	headRef, err := repo.Head()
+	if err != nil {
+		return nil, err
+	}
+
+	commit, err := repo.CommitObject(headRef.Hash())
+	if err != nil {
+		return nil, err
+	}
+
+	var commits []*object.Commit
+	for {
+		parent, err := commit.Parent(0)
+		if err == object.ErrParentNotFound {
+			break
+		} else if err != nil {
+			return nil, err
+		}
+
+		patch, err := parent.Patch(commit)
+		if err != nil {
+			return nil, err
+		}
+
+		filePatches := patch.FilePatches()
+		for _, fp := range filePatches {
+			from, to := fp.Files()
+			if from == nil {
+				// If the patch creates a new file, "from" will be nil.
+				if to.Path() == filepath {
+					commits = append(commits, commit) //added by this commit
+				}
+			} else if to == nil {
+				// If the patch deletes a file, "to" will be nil.
+				if from.Path() == filepath {
+					commits = append(commits, commit) //deleted by this commit
+				}
+			} else {
+				if from.Path() == filepath {
+					commits = append(commits, commit) //updated by this commit
+				}
+			}
+		}
+
+		// for the next loop iteration
+		commit = parent
+	}
+
+	return commits, err
+}
+
 func fileInCommitInternal(repo *git.Repository, hashString, filePath string) (*object.File, error) {
 	commit, err := commitObjectInternal(repo, hashString)
 	if err != nil {
