@@ -137,6 +137,25 @@ func RepoFiles(orgname, reponame string) ([]string, error) {
 	return files, nil
 }
 
+func RepoBranches(orgname, reponame string) ([]string, error) {
+	repo, err := Open(orgname, reponame)
+	if err != nil {
+		return nil, err
+	}
+
+	iter, err := repo.Branches()
+	if err != nil {
+		return nil, err
+	}
+
+	var branches []string
+	for branch, err := iter.Next(); err == nil; branch, err = iter.Next() {
+		branches = append(branches, branch.Name().Short())
+	}
+
+	return branches, nil
+}
+
 func RepoFileContents(orgname, reponame, filePath, commitHashStr string) (string, error) {
 	repo, err := OpenOrClone(orgname, reponame)
 	if err != nil {

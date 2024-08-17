@@ -219,7 +219,7 @@ export async function getEdits(
     const path = decodeURIComponent(filepath);
     console.log("getCommits", path);
     response = await fetch(
-      `http://localhost:8080/${orgname}/${reponame}/files/${path}`,
+      `http://localhost:8080/${orgname}/${reponame}/files/${path}?commit=${commit}`,
       {
         cache: "no-store",
       }

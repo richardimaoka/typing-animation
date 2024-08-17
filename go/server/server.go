@@ -91,6 +91,41 @@ func HandlePOST_Repo(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func HandleRepoBranches(w http.ResponseWriter, r *http.Request) {
+	// Check path parameters
+	orgname := r.PathValue("orgname")
+	reponame := r.PathValue("reponame")
+	if orgname == "" || reponame == "" {
+		writeErrorJson(w, http.StatusBadRequest, fmt.Errorf("orgname = '%s', reponame = '%s', but neither allows an empty value", orgname, reponame))
+		return
+	}
+
+	// Path parameter checks passed
+	log.Printf("GET /repos/%s/%s/branches called", orgname, reponame)
+
+	// Get repo branches
+	branches, err := gitpkg.RepoBranches(orgname, reponame)
+	if err != nil {
+		log.Printf("Error upon getting git branches in the repo, %s", err)
+		writeErrorJson(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	// Success
+	body := struct {
+		Orgname  string   `json:"orgname"`
+		Repo     string   `json:"repo"`
+		Branches []string `json:"branches"`
+	}{orgname, reponame, branches}
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(body)
+	if err != nil {
+		log.Printf("Error upon encoding body, %+v, to json, %s", body, err)
+		writeErrorJson(w, http.StatusInternalServerError, fmt.Errorf("internal error"))
+		return
+	}
+}
+
 func HandleRepoFiles(w http.ResponseWriter, r *http.Request) {
 	// Check path parameters
 	orgname := r.PathValue("orgname")
@@ -140,7 +175,7 @@ func HandleSingleFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	commitHash := r.URL.Query().Get("commit")
+	// commitHash := r.URL.Query().Get("commit")
 
 	// Path parameter checks passed
 	log.Printf("GET /repos/%s/%s/files/%s called", orgname, reponame, filepath)
@@ -249,6 +284,7 @@ func Run() {
 	mux.HandleFunc("POST /{orgname}/{reponame}", HandlePOST_Repo)
 	mux.HandleFunc("GET /{orgname}/{reponame}", HandleGET_Repo)
 	mux.HandleFunc("GET /{orgname}/{reponame}/files", HandleRepoFiles)
+	mux.HandleFunc("GET /{orgname}/{reponame}/branches", HandleRepoBranches)
 	mux.HandleFunc("GET /{orgname}/{reponame}/files/{filepath...}", HandleSingleFile)
 
 	// mux.HandleFunc("GET /repos/{orgname}/{reponame}/", HandleRepoFiles)

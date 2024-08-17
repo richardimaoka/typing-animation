@@ -20,17 +20,17 @@ interface Props {
   };
 }
 
-function toParamString(
+function strOrUndef(
   param: string | string[] | undefined
 ): string | undefined {
   return typeof param === "string" && param !== "" ? param : undefined;
 }
 
 export default async function Page(props: Props) {
-  const orgname = toParamString(props.searchParams.orgname);
-  const reponame = toParamString(props.searchParams.reponame);
-  const branch = toParamString(props.searchParams.branch) || "main";
-  const filepath = toParamString(props.searchParams.filepath);
+  const orgname = strOrUndef(props.searchParams.orgname);
+  const reponame = strOrUndef(props.searchParams.reponame);
+  const branch = strOrUndef(props.searchParams.branch) || "main";
+  const filepath = strOrUndef(props.searchParams.filepath);
 
   const repo = await getRepo(orgname, reponame);
 
