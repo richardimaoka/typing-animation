@@ -20,20 +20,17 @@ interface Props {
   };
 }
 
-function strOrUndef(
-  param: string | string[] | undefined
-): string | undefined {
+function strOrUndef(param: string | string[] | undefined): string | undefined {
   return typeof param === "string" && param !== "" ? param : undefined;
 }
 
 export default async function Page(props: Props) {
   const orgname = strOrUndef(props.searchParams.orgname);
   const reponame = strOrUndef(props.searchParams.reponame);
-  const branch = strOrUndef(props.searchParams.branch) || "main";
+  const branch = strOrUndef(props.searchParams.branch);
   const filepath = strOrUndef(props.searchParams.filepath);
 
   const repo = await getRepo(orgname, reponame);
-
   const branches = await getBranches(orgname, reponame);
   const files = await getFiles(orgname, reponame, branch);
   const commits = await getCommits(orgname, reponame, branch, filepath);
@@ -45,6 +42,7 @@ export default async function Page(props: Props) {
         orgname={orgname}
         reponame={reponame}
         branch={branch}
+        branchSelection={branches}
         files={files}
         filepath={filepath}
         commits={commits}

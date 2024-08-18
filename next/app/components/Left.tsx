@@ -6,6 +6,7 @@ import styles from "./Left.module.css";
 import { OrgNameField } from "./fields/OrgNameField";
 import { RepositoryNameField } from "./fields/RepositoryNameField";
 import { GitHubURLDisplay } from "./fields/GitHubURLDisplay";
+import { BranchSelection } from "./fields/BranchSelection";
 
 interface Props {
   commits?: CommitData[];
@@ -13,7 +14,8 @@ interface Props {
 
   orgname?: string;
   reponame?: string;
-  branch: string;
+  branch?: string;
+  branchSelection?: string[];
   filepath?: string;
   repoReady?: boolean;
 }
@@ -82,22 +84,9 @@ export function Left(props: Props) {
 
       {props.repoReady && (
         <div className={styles.lower}>
-          <label htmlFor="branch" className={styles.label}>
-            branch
-          </label>
-          <input
-            id="branch"
-            className={styles.input}
-            placeholder="main"
-            defaultValue={props.branch}
-            onBlur={(e) => {
-              onBranchChange(e.target.value);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                onBranchChange(e.currentTarget.value);
-              }
-            }}
+          <BranchSelection
+            branch={props.branch}
+            brancheSelection={props.branchSelection}
           />
           <label htmlFor="filepath" className={styles.label}>
             file path
