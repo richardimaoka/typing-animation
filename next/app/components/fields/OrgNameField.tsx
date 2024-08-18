@@ -45,7 +45,6 @@ export function OrgNameField(props: Props) {
         defaultValue={props.orgname}
         placeholder="{orgname}"
         onBlur={(e) => {
-          console.log("onBlur params update");
           updateSearchParams(e.target.value.trim());
         }}
         onKeyDown={(e) => {
