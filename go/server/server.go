@@ -214,7 +214,8 @@ func HandleSingleFile(w http.ResponseWriter, r *http.Request) {
 		commitDataSlice = append(commitDataSlice, data)
 	}
 
-	// Get git repo, then get repo files
+	// Get edits and current contents
+	var currentContents string
 	var edits []monaco.SingleEditOperation
 	commitHash := r.URL.Query().Get("commit")
 	if commitHash != "" {
@@ -233,7 +234,7 @@ func HandleSingleFile(w http.ResponseWriter, r *http.Request) {
 				writeErrorJson(w, http.StatusInternalServerError, fmt.Errorf("internal error"))
 				return
 			}
-			currentContents, err := currentFile.Contents()
+			currentContents, err = currentFile.Contents()
 			if err != nil {
 				log.Printf("Error upon getting git file in the repo, %s", err)
 				writeErrorJson(w, http.StatusInternalServerError, fmt.Errorf("internal error"))
@@ -264,11 +265,12 @@ func HandleSingleFile(w http.ResponseWriter, r *http.Request) {
 
 	// Success
 	body := struct {
-		Orgname string                       `json:"orgname"`
-		Repo    string                       `json:"repo"`
-		Commits []CommitData                 `json:"commits"`
-		Edits   []monaco.SingleEditOperation `json:"edits"`
-	}{orgname, reponame, commitDataSlice, edits}
+		Orgname  string                       `json:"orgname"`
+		Repo     string                       `json:"repo"`
+		Commits  []CommitData                 `json:"commits"`
+		Contents string                       `json:"contents"`
+		Edits    []monaco.SingleEditOperation `json:"edits"`
+	}{orgname, reponame, commitDataSlice, currentContents, edits}
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(body)
 	if err != nil {

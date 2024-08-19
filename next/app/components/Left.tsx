@@ -1,7 +1,4 @@
-"use client";
-
 import { CommitData } from "@/api/types";
-import { useRouter, useSearchParams } from "next/navigation";
 import styles from "./Left.module.css";
 import { OrgNameField } from "./fields/OrgNameField";
 import { RepositoryNameField } from "./fields/RepositoryNameField";
@@ -22,59 +19,6 @@ interface Props {
 }
 
 export function Left(props: Props) {
-  const router = useRouter();
-
-  function newPath(
-    newOrg: string | undefined,
-    newRepo: string | undefined,
-    newBranch: string | undefined,
-    newFilepath: string | undefined
-  ): string {
-    let params = [];
-
-    if (newOrg && newOrg !== "") {
-      params.push("orgname=" + newOrg);
-    }
-
-    if (newRepo && newRepo !== "") {
-      params.push("reponame=" + newRepo);
-    }
-
-    if (newBranch && newBranch !== "") {
-      params.push("branch=" + newBranch);
-    }
-
-    if (newFilepath && newFilepath !== "") {
-      params.push("filepath=" + encodeURIComponent(newFilepath));
-    }
-
-    if (params.length === 0) {
-      return "/";
-    } else {
-      return "/?" + params.join("&");
-    }
-  }
-
-  function onFilePathChange(newFilePath: string) {
-    const href = newPath(
-      props.orgname,
-      props.reponame,
-      props.branch,
-      newFilePath
-    );
-    router.push(href);
-  }
-
-  function onBranchChange(newBranch: string) {
-    const href = newPath(
-      props.orgname,
-      props.reponame,
-      newBranch,
-      props.filepath
-    );
-    router.push(href);
-  }
-
   return (
     <div className={styles.component}>
       <form className={styles.repo}>

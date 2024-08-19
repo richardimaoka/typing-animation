@@ -7,7 +7,6 @@ import {
 } from "@/api/api";
 import { Left } from "./components/Left";
 import styles from "./page.module.css";
-import { promises as fs } from "fs";
 import { Right } from "./components/Right";
 
 interface Props {
