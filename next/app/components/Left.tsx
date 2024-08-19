@@ -5,6 +5,7 @@ import { RepositoryNameField } from "./fields/RepositoryNameField";
 import { GitHubURLDisplay } from "./fields/GitHubURLDisplay";
 import { BranchSelection } from "./fields/BranchSelection";
 import { FilePathSelection } from "./fields/FilePathSelection";
+import { CommitSelection } from "./fields/CommitSelection";
 
 interface Props {
   commits?: CommitData[];
@@ -37,19 +38,7 @@ export function Left(props: Props) {
             filepath={props.filepath}
             fileSelection={props.files}
           />
-          <label className={styles.label + " " + styles.top}>commits</label>
-          <fieldset className={styles.commits}>
-            {props.commits &&
-              props.commits.map((c) => (
-                <div key={c.hash}>
-                  <input type="radio" id={c.hash} name="commit" />
-                  <label htmlFor={c.hash}>
-                    <span className={styles.hash}>{c.shortHash}</span>
-                    <span className={styles.message}>{c.shortMessage}</span>
-                  </label>
-                </div>
-              ))}
-          </fieldset>
+          <CommitSelection commit={""} commitSelection={props.commits} />
         </div>
       )}
     </div>
