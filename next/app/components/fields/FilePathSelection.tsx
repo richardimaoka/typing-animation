@@ -1,14 +1,14 @@
 "use client";
 
-import styles from "./BranchSelection.module.css";
+import styles from "./FilePathSelection.module.css";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
 interface Props {
-  branch?: string;
-  brancheSelection?: string[];
+  filepath?: string;
+  fileSelection?: string[];
 }
 
-export function BranchSelection(props: Props) {
+export function FilePathSelection(props: Props) {
   // https://github.com/vercel/next.js/discussions/47583
   const router = useRouter();
   const pathname = usePathname();
@@ -19,7 +19,7 @@ export function BranchSelection(props: Props) {
     const current = new URLSearchParams(Array.from(searchParams.entries())); // -> has to use this form
 
     // update as necessary
-    const paramName = "branch";
+    const paramName = "filepath";
     if (!newValue) {
       current.delete(paramName);
     } else {
@@ -35,30 +35,30 @@ export function BranchSelection(props: Props) {
   };
 
   const defaultValue =
-    props.branch && props.brancheSelection?.includes(props.branch)
-      ? props.branch
+    props.filepath && props.fileSelection?.includes(props.filepath)
+      ? props.filepath
       : "unselected";
 
   return (
     <>
-      <label htmlFor="branch" className={styles.label}>
-        branch
+      <label htmlFor="filepath" className={styles.label}>
+        file path
       </label>
       <select
-        id="branch"
+        id="filepath"
         onChange={(e) => {
           updateSearchParams(e.target.value.trim());
         }}
         defaultValue={defaultValue}
       >
-        {props.brancheSelection && props.brancheSelection.length > 0 ? (
+        {props.fileSelection && props.fileSelection.length > 0 ? (
           <>
             <option value="unselected" disabled>
               choose an option below
             </option>
-            {props.brancheSelection.map((branchName) => (
-              <option key={branchName} value={branchName}>
-                {branchName}
+            {props.fileSelection.map((filepath) => (
+              <option key={filepath} value={filepath}>
+                {filepath}
               </option>
             ))}
           </>

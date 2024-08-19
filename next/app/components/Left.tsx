@@ -7,6 +7,7 @@ import { OrgNameField } from "./fields/OrgNameField";
 import { RepositoryNameField } from "./fields/RepositoryNameField";
 import { GitHubURLDisplay } from "./fields/GitHubURLDisplay";
 import { BranchSelection } from "./fields/BranchSelection";
+import { FilePathSelection } from "./fields/FilePathSelection";
 
 interface Props {
   commits?: CommitData[];
@@ -88,25 +89,10 @@ export function Left(props: Props) {
             branch={props.branch}
             brancheSelection={props.branchSelection}
           />
-          <label htmlFor="filepath" className={styles.label}>
-            file path
-          </label>
-          <select
-            id="filepath"
-            onChange={(e) => {
-              onFilePathChange(e.target.value);
-            }}
-          >
-            {props.files ? (
-              props.files.map((fpath) => (
-                <option key={fpath} value={fpath}>
-                  {fpath}
-                </option>
-              ))
-            ) : (
-              <option disabled>no option is available</option>
-            )}
-          </select>
+          <FilePathSelection
+            filepath={props.filepath}
+            fileSelection={props.files}
+          />
           <label className={styles.label + " " + styles.top}>commits</label>
           <fieldset className={styles.commits}>
             {props.commits &&
