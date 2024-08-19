@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/richardimaoka/typing-animation/go/diff"
+	"github.com/richardimaoka/typing-animation/go/edit/monaco"
 	"github.com/richardimaoka/typing-animation/go/gitpkg"
 )
 
@@ -175,12 +177,10 @@ func HandleSingleFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// commitHash := r.URL.Query().Get("commit")
-
 	// Path parameter checks passed
 	log.Printf("GET /repos/%s/%s/files/%s called", orgname, reponame, filepath)
 
-	// Get git repo, then get repo files
+	// Get repo files
 	commits, err := gitpkg.CommitsForFile(orgname, reponame, filepath)
 	if err != nil {
 		log.Printf("Error upon getting git file in the repo, %s", err)
@@ -214,62 +214,61 @@ func HandleSingleFile(w http.ResponseWriter, r *http.Request) {
 		commitDataSlice = append(commitDataSlice, data)
 	}
 
-	// Success
-	body := struct {
-		Orgname string       `json:"orgname"`
-		Repo    string       `json:"repo"`
-		Commits []CommitData `json:"commits"`
-	}{orgname, reponame, commitDataSlice}
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(body)
-	if err != nil {
-		log.Printf("Error upon encoding body, %+v, to json, %s", body, err)
-		writeErrorJson(w, http.StatusInternalServerError, fmt.Errorf("internal error"))
-		return
-	}
-}
-
-func HandleSingleCommit(w http.ResponseWriter, r *http.Request) {
-	// Check path parameters
-	orgname := r.PathValue("orgname")
-	reponame := r.PathValue("reponame")
-	filepath := r.PathValue("filepath")
-	if orgname == "" || reponame == "" || filepath == "" {
-		writeErrorJson(
-			w,
-			http.StatusBadRequest,
-			fmt.Errorf("orgname = '%s', reponame = '%s', filepath = '%s', but neither allows an empty value", orgname, reponame, filepath),
-		)
-		return
-	}
-
-	commitHash := r.URL.Query().Get("commit")
-	if commitHash == "" {
-		writeErrorJson(
-			w,
-			http.StatusBadRequest,
-			fmt.Errorf("query parameter commit is missing"),
-		)
-		return
-	}
-
-	// Path parameter checks passed
-	log.Printf("GET /repos/%s/%s/files/%s called", orgname, reponame, filepath)
-
 	// Get git repo, then get repo files
-	contents, err := gitpkg.RepoFileContents(orgname, reponame, filepath, commitHash)
-	if err != nil {
-		log.Printf("Error upon getting git file in the repo, %s", err)
-		writeErrorJson(w, http.StatusInternalServerError, fmt.Errorf("internal error"))
-		return
+	var edits []monaco.SingleEditOperation
+	commitHash := r.URL.Query().Get("commit")
+	if commitHash != "" {
+		var nextCommit string
+		for i, c := range commitDataSlice {
+			if (commitHash == c.Hash || commitHash == c.ShortHash) && i < len(commitDataSlice)-1 {
+				commitHash = commitDataSlice[i].Hash
+				nextCommit = commitDataSlice[i+1].Hash
+			}
+		}
+
+		if nextCommit != "" {
+			currentFile, err := gitpkg.FileInCommit(orgname, reponame, filepath, commitHash)
+			if err != nil {
+				log.Printf("Error upon getting git file in the repo, %s", err)
+				writeErrorJson(w, http.StatusInternalServerError, fmt.Errorf("internal error"))
+				return
+			}
+			currentContents, err := currentFile.Contents()
+			if err != nil {
+				log.Printf("Error upon getting git file in the repo, %s", err)
+				writeErrorJson(w, http.StatusInternalServerError, fmt.Errorf("internal error"))
+				return
+			}
+
+			nextFile, err := gitpkg.FileInCommit(orgname, reponame, filepath, nextCommit)
+			if err != nil {
+				log.Printf("Error upon getting git file in the repo, %s", err)
+				writeErrorJson(w, http.StatusInternalServerError, fmt.Errorf("internal error"))
+				return
+			}
+			nextContents, err := nextFile.Contents()
+			if err != nil {
+				log.Printf("Error upon getting git file in the repo, %s", err)
+				writeErrorJson(w, http.StatusInternalServerError, fmt.Errorf("internal error"))
+				return
+			}
+
+			edits, err = diff.CalcMonacoEdits(currentContents, nextContents)
+			if err != nil {
+				log.Printf("Error upon getting git file in the repo, %s", err)
+				writeErrorJson(w, http.StatusInternalServerError, fmt.Errorf("internal error"))
+				return
+			}
+		}
 	}
 
 	// Success
 	body := struct {
-		Orgname  string `json:"orgname"`
-		Repo     string `json:"repo"`
-		Contents string `json:"contents"`
-	}{orgname, reponame, contents}
+		Orgname string                       `json:"orgname"`
+		Repo    string                       `json:"repo"`
+		Commits []CommitData                 `json:"commits"`
+		Edits   []monaco.SingleEditOperation `json:"edits"`
+	}{orgname, reponame, commitDataSlice, edits}
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(body)
 	if err != nil {
@@ -278,6 +277,56 @@ func HandleSingleCommit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+// func HandleSingleCommit(w http.ResponseWriter, r *http.Request) {
+// 	// Check path parameters
+// 	orgname := r.PathValue("orgname")
+// 	reponame := r.PathValue("reponame")
+// 	filepath := r.PathValue("filepath")
+// 	if orgname == "" || reponame == "" || filepath == "" {
+// 		writeErrorJson(
+// 			w,
+// 			http.StatusBadRequest,
+// 			fmt.Errorf("orgname = '%s', reponame = '%s', filepath = '%s', but neither allows an empty value", orgname, reponame, filepath),
+// 		)
+// 		return
+// 	}
+
+// 	commitHash := r.URL.Query().Get("commit")
+// 	if commitHash == "" {
+// 		writeErrorJson(
+// 			w,
+// 			http.StatusBadRequest,
+// 			fmt.Errorf("query parameter commit is missing"),
+// 		)
+// 		return
+// 	}
+
+// 	// Path parameter checks passed
+// 	log.Printf("GET /repos/%s/%s/files/%s called", orgname, reponame, filepath)
+
+// 	// Get git repo, then get repo files
+// 	contents, err := gitpkg.RepoFileContents(orgname, reponame, filepath, commitHash)
+// 	if err != nil {
+// 		log.Printf("Error upon getting git file in the repo, %s", err)
+// 		writeErrorJson(w, http.StatusInternalServerError, fmt.Errorf("internal error"))
+// 		return
+// 	}
+
+// 	// Success
+// 	body := struct {
+// 		Orgname  string `json:"orgname"`
+// 		Repo     string `json:"repo"`
+// 		Contents string `json:"contents"`
+// 	}{orgname, reponame, contents}
+// 	w.Header().Set("Content-Type", "application/json")
+// 	err = json.NewEncoder(w).Encode(body)
+// 	if err != nil {
+// 		log.Printf("Error upon encoding body, %+v, to json, %s", body, err)
+// 		writeErrorJson(w, http.StatusInternalServerError, fmt.Errorf("internal error"))
+// 		return
+// 	}
+// }
 
 func Run() {
 	mux := http.NewServeMux()
