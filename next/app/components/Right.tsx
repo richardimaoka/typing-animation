@@ -4,6 +4,7 @@ import { EditOperation, SourceCodeEditor } from "./monaco/SourceCodeEditor";
 interface Props {
   editorText?: string;
   edits?: EditOperation[];
+  commit?: string;
 }
 
 export async function Right(props: Props) {
@@ -19,7 +20,7 @@ export async function Right(props: Props) {
         props.edits
           ? {
               editSequence: {
-                id: "aaa",
+                id: props.commit || "aaa",
                 edits: props.edits,
               },
               newEditorText: "",
