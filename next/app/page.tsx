@@ -2,6 +2,7 @@ import {
   getBranches,
   getCommits,
   getEdits,
+  getFileContents,
   getFiles,
   getRepo,
 } from "@/api/api";
@@ -16,6 +17,7 @@ interface Props {
     reponame?: string | string[];
     branch?: string | string[];
     filepath?: string | string[];
+    commit?: string | string[];
   };
 }
 
@@ -28,12 +30,15 @@ export default async function Page(props: Props) {
   const reponame = strOrUndef(props.searchParams.reponame);
   const branch = strOrUndef(props.searchParams.branch);
   const filepath = strOrUndef(props.searchParams.filepath);
+  const commit = strOrUndef(props.searchParams.commit);
 
   const repo = await getRepo(orgname, reponame);
   const branches = await getBranches(orgname, reponame);
   const files = await getFiles(orgname, reponame, branch);
   const commits = await getCommits(orgname, reponame, branch, filepath);
-  const edits = await getEdits(orgname, reponame, filepath, undefined);
+
+  const contents = await getFileContents(orgname, reponame, filepath, commit);
+  const edits = await getEdits(orgname, reponame, filepath, commit);
 
   return (
     <div className={styles.component}>
@@ -46,8 +51,9 @@ export default async function Page(props: Props) {
         filepath={filepath}
         commits={commits}
         repoReady={repo.status === "ready"}
+        commit={commit}
       />
-      <Right />
+      <Right editorText={contents} />
     </div>
   );
 }

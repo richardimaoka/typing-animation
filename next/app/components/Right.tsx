@@ -1,33 +1,26 @@
 import fs from "node:fs";
 import { EditOperation, SourceCodeEditor } from "./monaco/SourceCodeEditor";
 
-interface Props {}
+interface Props {
+  editorText?: string;
+}
 
 export async function Right(props: Props) {
-  const editorText = fs.readFileSync(
-    process.cwd() + "/app/components/data/command.9334a46.go.txt",
-    "utf8"
-  );
-
-  const editsText = fs.readFileSync(
-    process.cwd() + "/app/components/data/9334a46-51f06c7.edits.json",
-    "utf8"
-  );
-  const edits = JSON.parse(editsText) as EditOperation[];
-
-  return <></>;
+  if (!props.editorText) {
+    return <></>;
+  }
 
   return (
     <SourceCodeEditor
-      editorText={editorText}
+      editorText={props.editorText}
       language="go"
-      typingAnimation={{
-        editSequence: {
-          id: "aaa",
-          edits: edits,
-        },
-        newEditorText: "",
-      }}
+      // typingAnimation={{
+      //   editSequence: {
+      //     id: "aaa",
+      //     edits: edits,
+      //   },
+      //   newEditorText: "",
+      // }}
     />
   );
 }

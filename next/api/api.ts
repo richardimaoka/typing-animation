@@ -45,7 +45,7 @@ export async function getRepo(
     return { status: "error" };
   })) as RepoStatus;
 
-  console.log("getRepo successful", jsonData);
+  console.log("getRepo successful");
   return jsonData;
 }
 
@@ -123,7 +123,7 @@ export async function getFiles(
     return { status: "error" };
   })) as FilesData;
 
-  console.log("getFiles successful", jsonData);
+  console.log("getFiles successful");
 
   return jsonData.files;
 }
@@ -155,7 +155,6 @@ export async function getCommits(
   let response: Response; /* let, instead of const, is easier for try-catch, but make sure you NEVER re-assign to the let variable */
   try {
     const path = decodeURIComponent(filepath);
-    console.log("getCommits", path);
     response = await fetch(
       `http://localhost:8080/${orgname}/${reponame}/files/${path}`,
       {
@@ -188,7 +187,7 @@ export async function getCommits(
     return { status: "error" };
   })) as FileData;
 
-  console.log("getCommits successful", jsonData);
+  console.log("getCommits successful");
 
   return jsonData.commits;
 }
@@ -198,7 +197,7 @@ export async function getFileContents(
   reponame: string | undefined,
   filepath: string | undefined,
   commit: string | undefined
-): Promise<CommitData[] | undefined> {
+): Promise<string | undefined> {
   if (!orgname) {
     return undefined;
   }
@@ -220,9 +219,8 @@ export async function getFileContents(
   let response: Response; /* let, instead of const, is easier for try-catch, but make sure you NEVER re-assign to the let variable */
   try {
     const path = decodeURIComponent(filepath);
-    console.log("getCommits", path);
     response = await fetch(
-      `http://localhost:8080/${orgname}/${reponame}/files/${path}`,
+      `http://localhost:8080/${orgname}/${reponame}/files/${path}?commit=${commit}`,
       {
         cache: "no-store",
       }
@@ -249,9 +247,9 @@ export async function getFileContents(
     return { status: "error" };
   })) as FileData;
 
-  console.log("getFileContents successful", jsonData);
+  console.log("getFileContents successful");
 
-  return jsonData.commits;
+  return jsonData.contents;
 }
 
 export async function getEdits(
@@ -278,7 +276,6 @@ export async function getEdits(
   let response: Response; /* let, instead of const, is easier for try-catch, but make sure you NEVER re-assign to the let variable */
   try {
     const path = decodeURIComponent(filepath);
-    console.log("getEdits", path);
     response = await fetch(
       `http://localhost:8080/${orgname}/${reponame}/files/${path}?commit=${commit}`,
       {
@@ -307,7 +304,7 @@ export async function getEdits(
     return { status: "error" };
   })) as FileData;
 
-  console.log("getEdits successful", jsonData);
+  console.log("getEdits successful");
 
   return jsonData.edits;
 }

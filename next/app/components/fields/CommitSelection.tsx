@@ -35,6 +35,8 @@ export function CommitSelection(props: Props) {
     router.push(`${pathname}${query}`);
   };
 
+  console.log("hashes:", props.commit);
+
   return (
     <>
       <label className={styles.label + " " + styles.top}>commits</label>
@@ -48,9 +50,11 @@ export function CommitSelection(props: Props) {
                 name="commit"
                 value={c.shortHash}
                 onChange={(e) => {
-                  console.log("esse");
                   updateSearchParams(e.target.value.trim());
                 }}
+                checked={
+                  c.shortHash === props.commit || c.hash === props.commit
+                }
               />
               <label htmlFor={c.hash}>
                 <span className={styles.hash}>{c.shortHash}</span>

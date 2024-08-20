@@ -17,6 +17,7 @@ interface Props {
   branchSelection?: string[];
   filepath?: string;
   repoReady?: boolean;
+  commit?: string;
 }
 
 export function Left(props: Props) {
@@ -38,7 +39,10 @@ export function Left(props: Props) {
             filepath={props.filepath}
             fileSelection={props.files}
           />
-          <CommitSelection commit={""} commitSelection={props.commits} />
+          <CommitSelection
+            commit={props.commit}
+            commitSelection={props.commits}
+          />
         </div>
       )}
     </div>
