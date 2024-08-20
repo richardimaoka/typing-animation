@@ -35,8 +35,6 @@ export function CommitSelection(props: Props) {
     router.push(`${pathname}${query}`);
   };
 
-  console.log("hashes:", props.commit);
-
   return (
     <>
       <label className={styles.label + " " + styles.top}>commits</label>

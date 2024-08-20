@@ -53,7 +53,7 @@ export default async function Page(props: Props) {
         repoReady={repo.status === "ready"}
         commit={commit}
       />
-      <Right editorText={contents} />
+      <Right editorText={contents} edits={edits} />
     </div>
   );
 }

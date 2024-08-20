@@ -3,6 +3,7 @@ import { EditOperation, SourceCodeEditor } from "./monaco/SourceCodeEditor";
 
 interface Props {
   editorText?: string;
+  edits?: EditOperation[];
 }
 
 export async function Right(props: Props) {
@@ -14,13 +15,17 @@ export async function Right(props: Props) {
     <SourceCodeEditor
       editorText={props.editorText}
       language="go"
-      // typingAnimation={{
-      //   editSequence: {
-      //     id: "aaa",
-      //     edits: edits,
-      //   },
-      //   newEditorText: "",
-      // }}
+      typingAnimation={
+        props.edits
+          ? {
+              editSequence: {
+                id: "aaa",
+                edits: props.edits,
+              },
+              newEditorText: "",
+            }
+          : undefined
+      }
     />
   );
 }
